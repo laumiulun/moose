@@ -34,6 +34,9 @@
 #include "EllipseCutUserObject.h"
 #include "RectangleCutUserObject.h"
 
+// Personal_TEst
+#include "XFEMWeibullMaterial.h"
+
 template <>
 InputParameters
 validParams<XFEMApp>()
@@ -115,7 +118,7 @@ XFEMApp::registerObjects(Factory & factory)
 
   // Materials
   registerMaterial(ComputeCrackTipEnrichmentSmallStrain);
-
+  registerMaterial(XFEMWeibullMaterial);
   // BC's
   registerBoundaryCondition(CrackTipEnrichmentCutOffBC);
 }

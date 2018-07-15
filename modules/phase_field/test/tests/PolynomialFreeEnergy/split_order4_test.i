@@ -1,9 +1,12 @@
 [Mesh]
   type = GeneratedMesh
-  dim = 1
+  dim = 2
   nx = 15
+  ny = 15
   xmin = 0
   xmax = 125
+  ymin = 0 
+  ymax= 125
 []
 
 [GlobalParams]
@@ -85,8 +88,8 @@
   l_tol = 1.0e-4
   nl_rel_tol = 1.0e-8
   start_time = 0.0
-  num_steps = 50
   dt = 15
+  end_time = 1000
   petsc_options_iname = -pc_type
   petsc_options_value = lu
 []

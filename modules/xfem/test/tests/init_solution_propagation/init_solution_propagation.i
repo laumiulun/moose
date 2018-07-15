@@ -34,8 +34,7 @@
 [UserObjects]
   [./line_seg_cut_set_uo]
     type = LineSegmentCutSetUserObject
-    cut_data ='0.0000e+000  0.0000e+000  5.5000e+000  0.0000e+000  0.0   0.0
-               5.5000e+000  0.0000e+000  2.5500e+001  0.0000e+000  0.05  1.05'
+    cut_data ='5.5000e+000  0.0000e+000  2.5500e+001  0.0000e+000  0.05  1.05'
   [../]
 []
 

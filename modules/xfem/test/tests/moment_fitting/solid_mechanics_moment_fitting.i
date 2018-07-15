@@ -123,10 +123,10 @@
 
   line_search = 'none'
 
-#  [./Quadrature]
-#    order = FOURTH
-#    type = MONOMIAL
-#  [../]
+  [./Quadrature]
+    order = FOURTH
+    type = MONOMIAL
+  [../]
 
   [./Predictor]
     type = SimplePredictor

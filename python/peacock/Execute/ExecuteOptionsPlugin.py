@@ -76,7 +76,7 @@ class ExecuteOptionsPlugin(QWidget, Plugin):
                 )
         self._preferences.addString("execute/threadsArgs",
                 "Default threads arguments",
-                "--n-threads=2",
+                "--n-threads=1",
                 "Set the default threads arguments",
                 )
 
