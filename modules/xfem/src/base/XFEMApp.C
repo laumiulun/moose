@@ -119,6 +119,8 @@ XFEMApp::registerObjects(Factory & factory)
   // Materials
   registerMaterial(ComputeCrackTipEnrichmentSmallStrain);
   registerMaterial(XFEMWeibullMaterial);
+	 
+
   // BC's
   registerBoundaryCondition(CrackTipEnrichmentCutOffBC);
 }
