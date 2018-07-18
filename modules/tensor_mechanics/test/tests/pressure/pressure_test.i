@@ -81,22 +81,29 @@
     [./Side1]
       boundary = 1
       function = rampConstant
-      displacements = 'disp_x disp_y disp_z'
+      disp_x = disp_x
+      disp_y = disp_y
+      disp_z = disp_z
     [../]
     [./Side2]
       boundary = 2
       function = zeroRamp
-      displacements = 'disp_x disp_y disp_z'
+      disp_x = disp_x
+      disp_y = disp_y
+      disp_z = disp_z
     [../]
     [./Side3]
       boundary = 3
       function = rampUnramp
-      displacements = 'disp_x disp_y disp_z'
+      disp_x = disp_x
+      disp_y = disp_y
+      disp_z = disp_z
     [../]
   [../]
 []
 
 [Materials]
+  active = 'Elasticity_tensor strain stress'
   [./Elasticity_tensor]
     type = ComputeElasticityTensor
     block = 1
@@ -115,6 +122,7 @@
 []
 
 [Executioner]
+  # Preconditioned JFNK (default)
   type = Transient
   solve_type = PJFNK
   nl_abs_tol = 1e-10
@@ -131,3 +139,4 @@
     elemental_as_nodal = true
   [../]
 []
+

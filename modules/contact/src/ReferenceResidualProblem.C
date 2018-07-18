@@ -1,11 +1,9 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*          All contents are licensed under LGPL V2.1           */
+/*             See LICENSE for full restrictions                */
+/****************************************************************/
 
 // MOOSE includes
 #include "ReferenceResidualProblem.h"
@@ -13,7 +11,6 @@
 #include "AuxiliarySystem.h"
 #include "MooseApp.h"
 #include "MooseMesh.h"
-#include "MooseVariable.h"
 #include "NonlinearSystem.h"
 
 template <>
@@ -109,11 +106,6 @@ ReferenceResidualProblem::initialSetup()
       mooseError("Could not find variable '", _refResidVarNames[i], "' in auxiliary system");
   }
 
-  const unsigned int size_solnVars = _solnVars.size();
-  _scaling_factors.resize(size_solnVars);
-  for (unsigned int i = 0; i < size_solnVars; ++i)
-    _scaling_factors[i] = nonlinear_sys.getVariable(/*tid*/ 0, _solnVars[i]).scalingFactor();
-
   FEProblemBase::initialSetup();
 }
 
@@ -140,11 +132,7 @@ ReferenceResidualProblem::updateReferenceResidual()
     _resid[i] = s.calculate_norm(nonlinear_sys.RHS(), _solnVars[i], DISCRETE_L2);
 
   for (unsigned int i = 0; i < _refResidVars.size(); ++i)
-  {
-    const Real refResidual =
-        as.calculate_norm(*as.current_local_solution, _refResidVars[i], DISCRETE_L2);
-    _refResid[i] = refResidual * _scaling_factors[i];
-  }
+    _refResid[i] = as.calculate_norm(*as.current_local_solution, _refResidVars[i], DISCRETE_L2);
 }
 
 MooseNonlinearConvergenceReason
@@ -158,7 +146,6 @@ ReferenceResidualProblem::checkNonlinearConvergence(std::string & msg,
                                                     const Real abstol,
                                                     const PetscInt nfuncs,
                                                     const PetscInt max_funcs,
-                                                    const PetscBool force_iteration,
                                                     const Real ref_resid,
                                                     const Real /*div_threshold*/)
 {
@@ -191,7 +178,7 @@ ReferenceResidualProblem::checkNonlinearConvergence(std::string & msg,
     oss << "Failed to converge, function norm is NaN\n";
     reason = MOOSE_DIVERGED_FNORM_NAN;
   }
-  else if (fnorm < abstol && (it || !force_iteration))
+  else if (fnorm < abstol)
   {
     oss << "Converged due to function norm " << fnorm << " < " << abstol << std::endl;
     reason = MOOSE_CONVERGED_FNORM_ABS;

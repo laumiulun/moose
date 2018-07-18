@@ -1,11 +1,9 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*          All contents are licensed under LGPL V2.1           */
+/*             See LICENSE for full restrictions                */
+/****************************************************************/
 
 #include "ElementLoopUserObject.h"
 
@@ -23,6 +21,7 @@ ElementLoopUserObject::ElementLoopUserObject(const InputParameters & parameters)
     BlockRestrictable(this),
     Coupleable(this, false),
     MooseVariableDependencyInterface(),
+    ZeroInterface(parameters),
     _mesh(_subproblem.mesh()),
     _current_elem(_assembly.elem()),
     _current_elem_volume(_assembly.elemVolume()),
@@ -43,6 +42,7 @@ ElementLoopUserObject::ElementLoopUserObject(ElementLoopUserObject & x, Threads:
     BlockRestrictable(&x),
     Coupleable(this, false),
     MooseVariableDependencyInterface(),
+    ZeroInterface(x.parameters()),
     _mesh(x._subproblem.mesh()),
     _current_elem(x._assembly.elem()),
     _current_elem_volume(x._assembly.elemVolume()),

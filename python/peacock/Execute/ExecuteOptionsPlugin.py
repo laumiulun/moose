@@ -1,13 +1,4 @@
 #!/usr/bin/env python
-#* This file is part of the MOOSE framework
-#* https://www.mooseframework.org
-#*
-#* All rights reserved, see COPYRIGHT for full restrictions
-#* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-#*
-#* Licensed under LGPL 2.1, please see LICENSE for details
-#* https://www.gnu.org/licenses/lgpl-2.1.html
-
 from PyQt5.QtWidgets import QWidget, QFileDialog, QMessageBox, QApplication
 from PyQt5.QtCore import pyqtSignal, Qt, QFileSystemWatcher
 import os, shlex
@@ -76,7 +67,7 @@ class ExecuteOptionsPlugin(QWidget, Plugin):
                 )
         self._preferences.addString("execute/threadsArgs",
                 "Default threads arguments",
-                "--n-threads=1",
+                "--n-threads=2",
                 "Set the default threads arguments",
                 )
 

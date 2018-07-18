@@ -1,11 +1,16 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/*               DO NOT MODIFY THIS HEADER                      */
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*           (c) 2010 Battelle Energy Alliance, LLC             */
+/*                   ALL RIGHTS RESERVED                        */
+/*                                                              */
+/*          Prepared by Battelle Energy Alliance, LLC           */
+/*            Under Contract No. DE-AC07-05ID14517              */
+/*            With the U. S. Department of Energy               */
+/*                                                              */
+/*            See COPYRIGHT for full restrictions               */
+/****************************************************************/
 
 // MOOSE includes
 #include "MultiApp.h"
@@ -90,7 +95,7 @@ validParams<MultiApp>()
   params.addPrivateParam<MPI_Comm>("_mpi_comm");
 
   // Set the default execution time
-  params.set<ExecFlagEnum>("execute_on", true) = EXEC_TIMESTEP_BEGIN;
+  params.set<MultiMooseEnum>("execute_on") = "timestep_begin";
 
   params.addParam<unsigned int>("max_procs_per_app",
                                 std::numeric_limits<unsigned int>::max(),
@@ -164,6 +169,12 @@ MultiApp::MultiApp(const InputParameters & parameters)
     _has_an_app(true),
     _backups(declareRestartableDataWithContext<SubAppBackups>("backups", this))
 {
+  if (_use_positions)
+  {
+    // Fill in the _positions vector and initialize
+    fillPositions();
+    init(_positions.size());
+  }
 }
 
 void
@@ -174,16 +185,6 @@ MultiApp::init(unsigned int num)
   _backups.reserve(_my_num_apps);
   for (unsigned int i = 0; i < _my_num_apps; i++)
     _backups.emplace_back(std::make_shared<Backup>());
-}
-
-void
-MultiApp::setupPositions()
-{
-  if (_use_positions)
-  {
-    fillPositions();
-    init(_positions.size());
-  }
 }
 
 void
@@ -532,7 +533,7 @@ MultiApp::createApp(unsigned int i, Real start_time)
   app_params.set<std::shared_ptr<CommandLine>>("_command_line") = _app.commandLine();
   app_params.set<unsigned int>("_multiapp_level") = _app.multiAppLevel() + 1;
   app_params.set<unsigned int>("_multiapp_number") = _first_local_app + i;
-  _apps[i] = AppFactory::instance().createShared(_app_type, full_name, app_params, _my_comm);
+  _apps[i].reset(AppFactory::instance().create(_app_type, full_name, app_params, _my_comm));
   auto & app = _apps[i];
 
   std::string input_file = "";

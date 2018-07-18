@@ -1,12 +1,3 @@
-#* This file is part of the MOOSE framework
-#* https://www.mooseframework.org
-#*
-#* All rights reserved, see COPYRIGHT for full restrictions
-#* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-#*
-#* Licensed under LGPL 2.1, please see LICENSE for details
-#* https://www.gnu.org/licenses/lgpl-2.1.html
-
 import re, os
 from timeit import default_timer as clock
 
@@ -51,7 +42,7 @@ class Job(object):
         self.__outfile = None
         self.__start_time = clock()
         self.__end_time = None
-        self.__joined_out = ''
+        self.__std_out = ''
         self.report_timer = None
         self.__slots = None
         self.__unique_identifier = os.path.join(tester.getTestDir(), tester.getTestName())
@@ -103,7 +94,7 @@ class Job(object):
         self.__tester.run(self.timer, self.options)
         self.__start_time = self.timer.starts[0]
         self.__end_time = self.timer.ends[-1]
-        self.__joined_out = self.__tester.joined_out
+        self.__std_out = self.__tester.std_out
 
     def killProcess(self):
         """ Kill remaining process that may be running """
@@ -119,24 +110,23 @@ class Job(object):
 
     def getOutput(self):
         """ Return the contents of output """
-        return self.__joined_out
+        return self.__std_out
 
     def setOutput(self, output):
         """ Method to allow schedulers to overwrite the output if certain conditions are met """
-        if (not self.__tester.outfile is None and not self.__tester.outfile.closed
-           and not self.__tester.errfile is None and not self.__tester.errfile.closed):
+        if not self.__tester.outfile is None and not self.__tester.outfile.closed:
             return
-        self.__joined_out = output
+        self.__std_out = output
 
     def getActiveTime(self):
         """ Return active time """
-        m = re.search(r"Active time=(\S+)", self.__joined_out)
+        m = re.search(r"Active time=(\S+)", self.__std_out)
         if m != None:
             return m.group(1)
 
     def getSolveTime(self):
         """ Return solve time """
-        m = re.search(r"solve().*", self.__joined_out)
+        m = re.search(r"solve().*", self.__std_out)
         if m != None:
             return m.group().split()[5]
 

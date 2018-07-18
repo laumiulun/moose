@@ -77,6 +77,7 @@
 
   [./h]
     type = AverageElementSize
+    variable = u
   [../]
 
   [./L2error]

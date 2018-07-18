@@ -1,12 +1,3 @@
-#* This file is part of the MOOSE framework
-#* https://www.mooseframework.org
-#*
-#* All rights reserved, see COPYRIGHT for full restrictions
-#* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-#*
-#* Licensed under LGPL 2.1, please see LICENSE for details
-#* https://www.gnu.org/licenses/lgpl-2.1.html
-
 from TestHarnessTestCase import TestHarnessTestCase
 
 class TestHarnessTester(TestHarnessTestCase):
@@ -16,16 +7,16 @@ class TestHarnessTester(TestHarnessTestCase):
         resource allocation.
         """
         # Subject a normally passing test to impossible cpu allocations
-        output = self.runTests('--no-color', '-i', 'always_ok', '-p', '2', '-j', '1')
-        self.assertRegexpMatches(output, 'tests/test_harness.always_ok.*? \[INSUFFICIENT SLOTS\] SKIP')
+        output = self.runTests('-i', 'always_ok', '-p', '2', '-j', '1')
+        self.assertIn('skipped (insufficient slots)', output)
 
         # Subject a normally passing test to impossible thread allocations
-        output = self.runTests('--no-color', '-i', 'always_ok', '--n-threads', '2', '-j', '1')
-        self.assertRegexpMatches(output, 'tests/test_harness.always_ok.*? \[INSUFFICIENT SLOTS\] SKIP')
+        output = self.runTests('-i', 'always_ok', '--n-threads', '2', '-j', '1')
+        self.assertIn('skipped (insufficient slots)', output)
 
         # A combination of threads*cpus with too low a hard limit (3*3= -j9)
-        output = self.runTests('--no-color', '-i', 'allocation_test', '--n-threads', '3', '-p', '3', '-j', '8')
-        self.assertRegexpMatches(output, 'tests/test_harness.allocation_test.*? \[INSUFFICIENT SLOTS\] SKIP')
+        output = self.runTests('-i', 'allocation_test', '--n-threads', '3', '-p', '3', '-j', '8')
+        self.assertIn('skipped (insufficient slots)', output)
 
     def testOversizedCaveat(self):
         """

@@ -59,11 +59,6 @@ endif
 
 all::
 
-# Add all header symlinks as dependencies to this target
-header_symlinks::
-
-unity_files::
-
 #
 # C++ rules
 #

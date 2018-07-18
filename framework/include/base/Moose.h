@@ -1,11 +1,16 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/*               DO NOT MODIFY THIS HEADER                      */
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*           (c) 2010 Battelle Energy Alliance, LLC             */
+/*                   ALL RIGHTS RESERVED                        */
+/*                                                              */
+/*          Prepared by Battelle Energy Alliance, LLC           */
+/*            Under Contract No. DE-AC07-05ID14517              */
+/*            With the U. S. Department of Energy               */
+/*                                                              */
+/*            See COPYRIGHT for full restrictions               */
+/****************************************************************/
 
 #ifndef MOOSE_H
 #define MOOSE_H
@@ -14,15 +19,12 @@
 #include "libmesh/libmesh_common.h"
 #include "XTermConstants.h"
 
-#include <set>
 #include <string>
 
 using namespace libMesh;
 
 class ActionFactory;
 class Factory;
-class MooseEnumItem;
-class ExecFlagEnum;
 
 /**
  * MOOSE now contains C++11 code, so give a reasonable error message
@@ -79,22 +81,6 @@ moose_try_emplace(M & m, const typename M::key_type & k, Args &&... args)
 class Syntax;
 class FEProblemBase;
 
-// Define MOOSE execution flags, this cannot be done in MooseTypes because the registration calls
-// must be in Moose.C to remain consistent with other registration calls.
-using ExecFlagType = MooseEnumItem;
-extern const ExecFlagType EXEC_NONE;
-extern const ExecFlagType EXEC_INITIAL;
-extern const ExecFlagType EXEC_LINEAR;
-extern const ExecFlagType EXEC_NONLINEAR;
-extern const ExecFlagType EXEC_TIMESTEP_END;
-extern const ExecFlagType EXEC_TIMESTEP_BEGIN;
-extern const ExecFlagType EXEC_FINAL;
-extern const ExecFlagType EXEC_FORCED;
-extern const ExecFlagType EXEC_FAILED;
-extern const ExecFlagType EXEC_CUSTOM;
-extern const ExecFlagType EXEC_SUBDOMAIN;
-extern const ExecFlagType EXEC_SAME_AS_MULTIAPP;
-
 namespace Moose
 {
 
@@ -124,13 +110,6 @@ extern bool _deprecated_is_error;
  * only be used with MOOSE unit.
  */
 extern bool _throw_on_error;
-
-/**
- * Storage for the registered execute flags. This is needed for the ExecuteMooseObjectWarehouse
- * to create the necessary storage containers on a per flag basis. This isn't something that
- * should be used by application developers.
- */
-extern ExecFlagEnum execute_flags;
 
 /**
  * Macros for coloring any output stream (_console, std::ostringstream, etc.)
@@ -164,7 +143,6 @@ using libMesh::err;
 void registerObjects(Factory & factory);
 void addActionTypes(Syntax & syntax);
 void registerActions(Syntax & syntax, ActionFactory & action_factory);
-void registerExecFlags(Factory & factory);
 
 void setSolverDefaults(FEProblemBase & problem);
 

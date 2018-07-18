@@ -1,12 +1,3 @@
-#* This file is part of the MOOSE framework
-#* https://www.mooseframework.org
-#*
-#* All rights reserved, see COPYRIGHT for full restrictions
-#* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-#*
-#* Licensed under LGPL 2.1, please see LICENSE for details
-#* https://www.gnu.org/licenses/lgpl-2.1.html
-
 from TestHarnessTestCase import TestHarnessTestCase
 import re
 
@@ -42,7 +33,7 @@ class TestHarnessTester(TestHarnessTestCase):
 
         # Parse the output, and find the caveat string
         raw_caveat_string = re.findall(r'\[(.*)\]', output)
-        output_caveats = raw_caveat_string[0].split(',')
+        output_caveats = raw_caveat_string[0].split(', ')
 
         # Do the comparison and assert if different. Using a
         # differential set grants us the benifit of forcing us to

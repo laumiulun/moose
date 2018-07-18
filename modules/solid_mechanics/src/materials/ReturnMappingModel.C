@@ -1,12 +1,9 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
-
+/****************************************************************/
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*          All contents are licensed under LGPL V2.1           */
+/*             See LICENSE for full restrictions                */
+/****************************************************************/
 #include "ReturnMappingModel.h"
 
 #include "SymmIsotropicElasticityTensor.h"
@@ -21,9 +18,6 @@ validParams<ReturnMappingModel>()
   params.addParam<Real>("max_inelastic_increment",
                         1e-4,
                         "The maximum inelastic strain increment allowed in a time step");
-  params.addParam<bool>("compute_material_timestep_limit",
-                        false,
-                        "Whether to compute the matl_timestep_limit material property");
   return params;
 }
 
@@ -36,10 +30,7 @@ ReturnMappingModel::ReturnMappingModel(const InputParameters & parameters,
         declareProperty<Real>("effective_" + inelastic_strain_name + "_strain")),
     _effective_inelastic_strain_old(
         getMaterialPropertyOld<Real>("effective_" + inelastic_strain_name + "_strain")),
-    _max_inelastic_increment(parameters.get<Real>("max_inelastic_increment")),
-    _compute_matl_timestep_limit(getParam<bool>("compute_material_timestep_limit")),
-    _matl_timestep_limit(
-        _compute_matl_timestep_limit ? &declareProperty<Real>("matl_timestep_limit") : NULL)
+    _max_inelastic_increment(parameters.get<Real>("max_inelastic_increment"))
 {
 }
 
@@ -60,11 +51,7 @@ ReturnMappingModel::computeStress(const Elem & current_elem,
   // the creep strain
   // stress = stressOld + stressIncrement
   if (_t_step == 0 && !_app.isRestarting())
-  {
-    if (_compute_matl_timestep_limit)
-      (*_matl_timestep_limit)[_qp] = std::numeric_limits<Real>::max();
     return;
-  }
 
   stress_new = elasticityTensor * strain_increment;
   stress_new += stress_old;
@@ -138,8 +125,6 @@ ReturnMappingModel::computeStress(const Elem & /*current_elem*/,
   stress_new += stress_old;
 
   computeStressFinalize(inelastic_strain_increment);
-  if (_compute_matl_timestep_limit)
-    (*_matl_timestep_limit)[_qp] = computeTimeStepLimit();
 }
 
 Real

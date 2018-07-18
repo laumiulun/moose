@@ -1,13 +1,4 @@
 #!/usr/bin/env python
-#* This file is part of the MOOSE framework
-#* https://www.mooseframework.org
-#*
-#* All rights reserved, see COPYRIGHT for full restrictions
-#* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-#*
-#* Licensed under LGPL 2.1, please see LICENSE for details
-#* https://www.gnu.org/licenses/lgpl-2.1.html
-
 from PyQt5.QtWidgets import QWidget, QSplitter, QMessageBox
 from PyQt5.QtCore import Qt, pyqtSignal
 from peacock.utils import WidgetUtils
@@ -50,7 +41,6 @@ class BlockEditor(QWidget, MooseWidget):
         super(BlockEditor, self).__init__(**kwds)
         self.block = block
         self.comment_edit = CommentEditor()
-        self.comment_edit.setComments(self.block.comments)
         self.comment_edit.textChanged.connect(self._blockChanged)
         self.splitter = None
         self.clone_button = None

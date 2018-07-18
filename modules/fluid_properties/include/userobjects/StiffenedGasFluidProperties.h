@@ -1,11 +1,9 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*          All contents are licensed under LGPL V2.1           */
+/*             See LICENSE for full restrictions                */
+/****************************************************************/
 
 #ifndef STIFFENEDGASFLUIDPROPERTIES_H
 #define STIFFENEDGASFLUIDPROPERTIES_H
@@ -28,10 +26,7 @@ public:
 
   virtual Real pressure(Real v, Real u) const override;
   virtual Real temperature(Real v, Real u) const override;
-  virtual Real c(Real v, Real e) const override;
-  virtual void c(Real v, Real e, Real & c, Real & dc_dv, Real & dc_de) const override;
-  virtual Real c_from_v_h(Real v, Real h) const override;
-  virtual void c_from_v_h(Real v, Real h, Real & c, Real & dc_dv, Real & dc_dh) const override;
+  virtual Real c(Real v, Real u) const override;
   virtual Real cp(Real v, Real u) const override;
   virtual Real cv(Real v, Real u) const override;
   virtual Real gamma(Real v, Real u) const override;

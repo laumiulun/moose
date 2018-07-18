@@ -1,12 +1,3 @@
-#* This file is part of the MOOSE framework
-#* https://www.mooseframework.org
-#*
-#* All rights reserved, see COPYRIGHT for full restrictions
-#* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-#*
-#* Licensed under LGPL 2.1, please see LICENSE for details
-#* https://www.gnu.org/licenses/lgpl-2.1.html
-
 import re, os, time
 from Tester import Tester
 from TestHarness import util
@@ -73,13 +64,11 @@ class RunApp(Tester):
     def checkRunnable(self, options):
         if options.enable_recover:
             if self.specs.isValid('expect_out') or self.specs.isValid('absent_out') or self.specs['should_crash'] == True:
-                self.addCaveats('expect_out RECOVER')
-                self.setStatus(self.bucket_skip.status, self.bucket_skip)
+                self.setStatus('expect_out RECOVER', self.bucket_skip)
                 return False
 
         if self.specs.isValid('executable_pattern') and re.search(self.specs['executable_pattern'], self.specs['executable']) == None:
-            self.addCaveats('EXECUTABLE PATTERN')
-            self.setStatus(self.bucket_skip.status, self.bucket_skip)
+            self.setStatus('EXECUTABLE PATTERN', self.bucket_skip)
             return False
 
         return True

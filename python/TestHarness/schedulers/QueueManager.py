@@ -1,12 +1,3 @@
-#* This file is part of the MOOSE framework
-#* https://www.mooseframework.org
-#*
-#* All rights reserved, see COPYRIGHT for full restrictions
-#* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-#*
-#* Licensed under LGPL 2.1, please see LICENSE for details
-#* https://www.gnu.org/licenses/lgpl-2.1.html
-
 from Scheduler import Scheduler
 from collections import namedtuple
 import os, sys, re, json, shutil, errno
@@ -436,7 +427,7 @@ class QueueManager(Scheduler):
                     with open(stdout_file, 'r') as f:
                         # We can use trimmed output here, now that the job has a proper
                         # status (we are not going to run processResults again).
-                        outfile = util.readOutput(f, None, self.options)
+                        outfile = util.readOutput(f, self.options)
                     job.setOutput(outfile)
                 else:
                     with self.dag_lock:

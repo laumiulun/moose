@@ -1,4 +1,4 @@
-# J-Integral
+# JIntegral
 !syntax description /Postprocessors/JIntegral
 
 ## Description

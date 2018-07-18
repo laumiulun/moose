@@ -136,6 +136,13 @@
 []
 
 [Transfers]
+  [./marker_to_sub]
+    type = LevelSetMeshRefinementTransfer
+    multi_app = reinit
+    source_variable = marker
+    variable = marker
+  [../]
+
   [./to_sub]
     type = MultiAppCopyTransfer
     source_variable = phi

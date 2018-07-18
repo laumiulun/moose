@@ -1,11 +1,16 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/*               DO NOT MODIFY THIS HEADER                      */
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*           (c) 2010 Battelle Energy Alliance, LLC             */
+/*                   ALL RIGHTS RESERVED                        */
+/*                                                              */
+/*          Prepared by Battelle Energy Alliance, LLC           */
+/*            Under Contract No. DE-AC07-05ID14517              */
+/*            With the U. S. Department of Energy               */
+/*                                                              */
+/*            See COPYRIGHT for full restrictions               */
+/****************************************************************/
 
 #include "LStableDirk2.h"
 #include "NonlinearSystem.h"
@@ -29,10 +34,12 @@ LStableDirk2::LStableDirk2(const InputParameters & parameters)
 {
 }
 
+LStableDirk2::~LStableDirk2() {}
+
 void
 LStableDirk2::computeTimeDerivatives()
 {
-  // We are multiplying by the method coefficients in postResidual(), so
+  // We are multiplying by the method coefficients in postStep(), so
   // the time derivatives are of the same form at every stage although
   // the current solution varies depending on the stage.
   _u_dot = *_solution;
@@ -74,7 +81,7 @@ LStableDirk2::solve()
 }
 
 void
-LStableDirk2::postResidual(NumericVector<Number> & residual)
+LStableDirk2::postStep(NumericVector<Number> & residual)
 {
   if (_stage == 1)
   {
@@ -119,5 +126,5 @@ LStableDirk2::postResidual(NumericVector<Number> & residual)
     residual.close();
   }
   else
-    mooseError("LStableDirk2::postResidual(): Member variable _stage can only have values 1 or 2.");
+    mooseError("LStableDirk2::postStep(): Member variable _stage can only have values 1 or 2.");
 }

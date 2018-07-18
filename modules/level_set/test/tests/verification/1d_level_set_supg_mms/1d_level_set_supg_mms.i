@@ -81,6 +81,7 @@
   [../]
   [./h]
     type = AverageElementSize
+    variable = phi
   [../]
   [./point]
     type = PointValue

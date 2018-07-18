@@ -1,11 +1,9 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*          All contents are licensed under LGPL V2.1           */
+/*             See LICENSE for full restrictions                */
+/****************************************************************/
 
 #include "IdealGasFluidProperties.h"
 #include "Conversion.h"
@@ -42,8 +40,8 @@ Real
 IdealGasFluidProperties::pressure(Real v, Real u) const
 {
   if (v == 0.0)
-    throw MooseException(
-        name() + ": Invalid value of specific volume detected (v = " + Moose::stringify(v) + ").");
+    throw MooseException(name() + ": Invalid value of specific volume detected (v = " +
+                         Moose::stringify(v) + ").");
 
   // The std::max function serves as a hard limiter, which will guarantee non-negative pressure
   // when resolving strongly nonlinear waves
@@ -57,45 +55,12 @@ IdealGasFluidProperties::temperature(Real /*v*/, Real u) const
 }
 
 Real
-IdealGasFluidProperties::c(Real v, Real e) const
+IdealGasFluidProperties::c(Real v, Real u) const
 {
-  Real temp = temperature(v, e);
+  Real temp = temperature(v, u);
   // The std::max function serves as a hard limiter, which will guarantee non-negative speed of
   // sound when resolving strongly nonlinear waves
   return std::sqrt(std::max(1.0e-8, _gamma * _R * temp));
-}
-
-void
-IdealGasFluidProperties::c(Real v, Real e, Real & c_value, Real & dc_dv, Real & dc_de) const
-{
-  Real dp_dv, dp_de, dT_dv, dT_de;
-  dp_duv(v, e, dp_dv, dp_de, dT_dv, dT_de);
-
-  const Real T = temperature(v, e);
-  c_value = std::sqrt(_gamma * _R * T);
-
-  const Real dc_dT = 0.5 / c_value * _gamma * _R;
-  dc_dv = dc_dT * dT_dv;
-  dc_de = dc_dT * dT_de;
-}
-
-Real
-IdealGasFluidProperties::c_from_v_h(Real v, Real h) const
-{
-  const Real e = h / _gamma;
-  return c(v, e);
-}
-
-void
-IdealGasFluidProperties::c_from_v_h(
-    Real v, Real h, Real & c_value, Real & dc_dv, Real & dc_dh) const
-{
-  const Real e = h / _gamma;
-  const Real de_dh = 1.0 / _gamma;
-
-  Real dc_de;
-  c(v, e, c_value, dc_dv, dc_de);
-  dc_dh = dc_de * de_dh;
 }
 
 Real IdealGasFluidProperties::cp(Real, Real) const { return _cp; }

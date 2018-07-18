@@ -1,11 +1,16 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/*               DO NOT MODIFY THIS HEADER                      */
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*           (c) 2010 Battelle Energy Alliance, LLC             */
+/*                   ALL RIGHTS RESERVED                        */
+/*                                                              */
+/*          Prepared by Battelle Energy Alliance, LLC           */
+/*            Under Contract No. DE-AC07-05ID14517              */
+/*            With the U. S. Department of Energy               */
+/*                                                              */
+/*            See COPYRIGHT for full restrictions               */
+/****************************************************************/
 
 #ifndef ACTIONWAREHOUSE_H
 #define ACTIONWAREHOUSE_H
@@ -81,7 +86,6 @@ public:
    */
   void printInputFile(std::ostream & out);
 
-  ///@{
   /**
    * Iterators to the Actions in the warehouse.  Iterators should always be used when executing
    * Actions to capture dynamically added Actions (meta-Actions).  Meta-Actions are allowed to
@@ -90,12 +94,6 @@ public:
    */
   ActionIterator actionBlocksWithActionBegin(const std::string & task);
   ActionIterator actionBlocksWithActionEnd(const std::string & task);
-  ///@}
-
-  /**
-   * Returns a reference to all of the actions.
-   */
-  const std::vector<std::shared_ptr<Action>> & allActionBlocks() const;
 
   /**
    * Retrieve a constant list of \p Action pointers associated with the passed in task.
@@ -147,8 +145,6 @@ public:
       action_vector.push_back(pair.second);
     return action_vector;
   }
-
-  void setFinalTask(const std::string & task);
 
   /**
    * Check if Actions associated with passed in task exist.
@@ -246,10 +242,6 @@ protected:
 
   /// Problem class
   std::shared_ptr<FEProblemBase> _problem;
-
-private:
-  /// Last task to run before (optional) early termination - blank means no early termination.
-  std::string _final_task;
 };
 
 #endif // ACTIONWAREHOUSE_H

@@ -15,13 +15,6 @@
   seff_UO = 'SeffWater SeffGas'
 []
 
-[Functions]
-  [./dts]
-    type = PiecewiseLinear
-    y = '1 2 4 20'
-    x = '0 1 10 100'
-  [../]
-[]
 
 [UserObjects]
   [./PPNames]
@@ -208,7 +201,8 @@
 
   [./TimeStepper]
     type = FunctionDT
-    function = dts
+    time_dt = '1 2 4 20'
+    time_t = '0 1 10 100'
   [../]
 
 

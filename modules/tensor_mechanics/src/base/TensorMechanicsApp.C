@@ -1,12 +1,9 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
-
+/****************************************************************/
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*          All contents are licensed under LGPL V2.1           */
+/*             See LICENSE for full restrictions                */
+/****************************************************************/
 #include "TensorMechanicsApp.h"
 #include "Moose.h"
 #include "AppFactory.h"
@@ -223,9 +220,6 @@ TensorMechanicsApp::TensorMechanicsApp(const InputParameters & parameters) : Moo
 
   Moose::associateSyntax(_syntax, _action_factory);
   TensorMechanicsApp::associateSyntax(_syntax, _action_factory);
-
-  Moose::registerExecFlags(_factory);
-  TensorMechanicsApp::registerExecFlags(_factory);
 }
 
 TensorMechanicsApp::~TensorMechanicsApp() {}
@@ -506,15 +500,4 @@ TensorMechanicsApp::associateSyntax(Syntax & syntax, ActionFactory & action_fact
   registerAction(DomainIntegralAction, "add_aux_kernel");
   registerAction(DomainIntegralAction, "add_postprocessor");
   registerAction(DomainIntegralAction, "add_material");
-}
-
-// External entry point for dynamic execute flag registration
-extern "C" void
-TensorMechanicsApp__registerExecFlags(Factory & factory)
-{
-  TensorMechanicsApp::registerExecFlags(factory);
-}
-void
-TensorMechanicsApp::registerExecFlags(Factory & /*factory*/)
-{
 }

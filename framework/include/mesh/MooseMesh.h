@@ -1,11 +1,16 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/*               DO NOT MODIFY THIS HEADER                      */
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*           (c) 2010 Battelle Energy Alliance, LLC             */
+/*                   ALL RIGHTS RESERVED                        */
+/*                                                              */
+/*          Prepared by Battelle Energy Alliance, LLC           */
+/*            Under Contract No. DE-AC07-05ID14517              */
+/*            With the U. S. Department of Energy               */
+/*                                                              */
+/*            See COPYRIGHT for full restrictions               */
+/****************************************************************/
 
 #ifndef MOOSEMESH_H
 #define MOOSEMESH_H
@@ -27,7 +32,6 @@
 // forward declaration
 class MooseMesh;
 class Assembly;
-class RelationshipManager;
 
 // libMesh forward declarations
 namespace libMesh
@@ -427,23 +431,14 @@ public:
   unsigned int getPatchSize() const;
 
   /**
-   * Getter for the ghosting_patch_size parameter.
-   */
-  unsigned int getGhostingPatchSize() const { return _ghosting_patch_size; };
-
-  /**
-   * Getter for the maximum leaf size parameter.
-   */
-  unsigned int getMaxLeafSize() const { return _max_leaf_size; };
-  /**
    * Set the patch size update strategy
    */
-  void setPatchUpdateStrategy(Moose::PatchUpdateType patch_update_strategy);
+  void setPatchUpdateStrategy(MooseEnum patch_update_strategy);
 
   /**
    * Get the current patch update strategy.
    */
-  const Moose::PatchUpdateType & getPatchUpdateStrategy() const;
+  const MooseEnum & getPatchUpdateStrategy() const;
 
   /**
    * Get a (slightly inflated) processor bounding box.
@@ -813,11 +808,7 @@ public:
   virtual std::unique_ptr<PointLocatorBase> getPointLocator() const;
 
 protected:
-  /// Deprecated (DO NOT USE)
   std::vector<std::unique_ptr<GhostingFunctor>> _ghosting_functors;
-
-  /// The list of active geometric relationship managers (bound to the underlying MeshBase object).
-  std::vector<std::shared_ptr<RelationshipManager>> _relationship_managers;
 
   /// Can be set to DISTRIBUTED, REPLICATED, or DEFAULT.  Determines whether
   /// the underlying libMesh mesh is a ReplicatedMesh or DistributedMesh.
@@ -957,14 +948,8 @@ protected:
   /// The number of nodes to consider in the NearestNode neighborhood.
   unsigned int _patch_size;
 
-  /// The number of nearest neighbors to consider for ghosting purposes when iteration patch update strategy is used.
-  unsigned int _ghosting_patch_size;
-
-  // The maximum number of points in each leaf of the KDTree used in the nearest neighbor search.
-  unsigned int _max_leaf_size;
-
   /// The patch update strategy
-  Moose::PatchUpdateType _patch_update_strategy;
+  MooseEnum _patch_update_strategy;
 
   /// file_name iff this mesh was read from a file
   std::string _file_name;

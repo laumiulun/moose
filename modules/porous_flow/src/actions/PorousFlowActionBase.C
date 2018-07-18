@@ -1,12 +1,9 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
-
+/****************************************************************/
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*          All contents are licensed under LGPL V2.1           */
+/*             See LICENSE for full restrictions                */
+/****************************************************************/
 #include "PorousFlowActionBase.h"
 
 #include "FEProblem.h"
@@ -109,7 +106,7 @@ PorousFlowActionBase::addSaturationAux(unsigned phase)
     params.set<MaterialPropertyName>("property") = "PorousFlow_saturation_qp";
     params.set<unsigned>("index") = phase;
     params.set<AuxVariableName>("variable") = "saturation" + phase_str;
-    params.set<ExecFlagEnum>("execute_on") = EXEC_TIMESTEP_END;
+    params.set<MultiMooseEnum>("execute_on") = "timestep_end";
     _problem->addAuxKernel(aux_kernel_type, aux_kernel_name, params);
   }
 }
@@ -137,7 +134,7 @@ PorousFlowActionBase::addDarcyAux(const RealVectorValue & gravity)
 
     params.set<RealVectorValue>("gravity") = gravity;
     params.set<UserObjectName>("PorousFlowDictator") = _dictator_name;
-    params.set<ExecFlagEnum>("execute_on") = EXEC_TIMESTEP_END;
+    params.set<MultiMooseEnum>("execute_on") = "timestep_end";
 
     std::string aux_kernel_name = "PorousFlowActionBase_Darcy_x_Aux";
     params.set<MooseEnum>("component") = "x";
@@ -196,7 +193,7 @@ PorousFlowActionBase::addStressAux()
     InputParameters params = _factory.getValidParams(aux_kernel_type);
 
     params.set<MaterialPropertyName>("rank_two_tensor") = "stress";
-    params.set<ExecFlagEnum>("execute_on") = EXEC_TIMESTEP_END;
+    params.set<MultiMooseEnum>("execute_on") = "timestep_end";
 
     std::string aux_kernel_name = "PorousFlowAction_stress_xx";
     params.set<AuxVariableName>("variable") = "stress_xx";

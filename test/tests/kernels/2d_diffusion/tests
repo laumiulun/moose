@@ -27,13 +27,4 @@
     cli_args = 'Outputs/exodus=false'
     recover = false
   [../]
-
-  [./test_force_iteration]
-    type = 'Exodiff'
-    input = '2d_diffusion_test.i'
-    exodiff = 'out.e'
-    cli_args = 'Executioner/nl_abs_tol=1e+1 Executioner/petsc_options_iname=-snes_force_iteration Executioner/petsc_options_value=1'
-    petsc_version = '>=3.8.4'
-    prereq = testdirichlet
-  [../]
 []

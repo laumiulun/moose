@@ -1,11 +1,16 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/*               DO NOT MODIFY THIS HEADER                      */
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*           (c) 2010 Battelle Energy Alliance, LLC             */
+/*                   ALL RIGHTS RESERVED                        */
+/*                                                              */
+/*          Prepared by Battelle Energy Alliance, LLC           */
+/*            Under Contract No. DE-AC07-05ID14517              */
+/*            With the U. S. Department of Energy               */
+/*                                                              */
+/*            See COPYRIGHT for full restrictions               */
+/****************************************************************/
 
 #include "NonlinearSystemBase.h"
 #include "AuxiliarySystem.h"
@@ -222,7 +227,7 @@ NonlinearSystemBase::timestepSetup()
     _nodal_dampers.timestepSetup(tid);
     _integrated_bcs.timestepSetup(tid);
   }
-  _scalar_kernels.timestepSetup();
+  _scalar_kernels.initialSetup();
   _constraints.timestepSetup();
   _general_dampers.timestepSetup();
   _nodal_bcs.timestepSetup();
@@ -544,7 +549,7 @@ NonlinearSystemBase::computeResidual(NumericVector<Number> & residual, Moose::Ke
       _Re_time->close();
     _Re_non_time->close();
     if (_time_integrator)
-      _time_integrator->postResidual(residual);
+      _time_integrator->postStep(residual);
     else
       residual += *_Re_non_time;
     residual.close();
@@ -1248,9 +1253,6 @@ NonlinearSystemBase::computeResidualInternal(Moose::KernelType type)
       // Displaced Constraints
       if (_fe_problem.getDisplacedProblem())
         constraintResiduals(*_Re_non_time, true);
-
-      if (_fe_problem.computingNonlinearResid())
-        _constraints.residualEnd();
     }
     PARALLEL_CATCH;
     _Re_non_time->close();

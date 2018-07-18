@@ -1,22 +1,14 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
-
+/****************************************************************/
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*          All contents are licensed under LGPL V2.1           */
+/*             See LICENSE for full restrictions                */
+/****************************************************************/
 #ifndef COMPUTEEIGENSTRAINFROMINITIALSTRESS_H
 #define COMPUTEEIGENSTRAINFROMINITIALSTRESS_H
 
 #include "ComputeEigenstrainBase.h"
 #include "RankFourTensor.h"
-
-class ComputeEigenstrainFromInitialStress;
-
-template <>
-InputParameters validParams<ComputeEigenstrainFromInitialStress>();
 
 /**
  * ComputeEigenstrain computes an Eigenstrain that results from an initial stress
@@ -34,9 +26,6 @@ protected:
 
   /// elasticity tensor used to convert stress to strain
   const MaterialProperty<RankFourTensor> & _elasticity_tensor;
-
-  ///Stores the total eigenstrain in the previous step
-  const MaterialProperty<RankTwoTensor> & _eigenstrain_old;
 
   /// initial stress components
   std::vector<Function *> _initial_stress_fcn;

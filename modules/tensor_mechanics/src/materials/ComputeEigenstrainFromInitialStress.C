@@ -1,11 +1,9 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*          All contents are licensed under LGPL V2.1           */
+/*             See LICENSE for full restrictions                */
+/****************************************************************/
 
 #include "ComputeEigenstrainFromInitialStress.h"
 #include "RankTwoTensor.h"
@@ -28,6 +26,7 @@ validParams<ComputeEigenstrainFromInitialStress>()
                                "used to compute strain from stress.  Do not provide "
                                "any base_name if your elasticity tensor does not use "
                                "one.");
+  params.set<bool>("incremental_form") = true;
   return params;
 }
 
@@ -35,9 +34,11 @@ ComputeEigenstrainFromInitialStress::ComputeEigenstrainFromInitialStress(
     const InputParameters & parameters)
   : ComputeEigenstrainBase(parameters),
     _base_name(isParamValid("base_name") ? getParam<std::string>("base_name") + "_" : ""),
-    _elasticity_tensor(getMaterialPropertyByName<RankFourTensor>(_base_name + "elasticity_tensor")),
-    _eigenstrain_old(getMaterialPropertyOld<RankTwoTensor>(_eigenstrain_name))
+    _elasticity_tensor(getMaterialPropertyByName<RankFourTensor>(_base_name + "elasticity_tensor"))
 {
+  if (_incremental_form == false)
+    mooseError("ComputeEigenstrainFromInitialStress: incremental_form must be set to true");
+
   const std::vector<FunctionName> & fcn_names(
       getParam<std::vector<FunctionName>>("initial_stress"));
   const unsigned num = fcn_names.size();
@@ -67,5 +68,5 @@ ComputeEigenstrainFromInitialStress::computeQpEigenstrain()
     _eigenstrain[_qp] = -_elasticity_tensor[_qp].invSymm() * initial_stress;
   }
   else
-    _eigenstrain[_qp] = _eigenstrain_old[_qp];
+    _eigenstrain[_qp] = (*_eigenstrain_old)[_qp];
 }

@@ -119,6 +119,7 @@
     thermal_expansion_coeff = 5e-6
     stress_free_temperature = 300.0
     temperature = temp
+    incremental_form = true
     eigenstrain_name = thermal_expansion
   [../]
 

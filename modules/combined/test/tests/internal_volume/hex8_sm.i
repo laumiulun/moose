@@ -7,16 +7,8 @@
 # The mesh is composed of one block (1) with an interior cavity of volume 8.
 #   Block 2 sits in the cavity and has a volume of 1.  Thus, the total volume
 #   is 7.
-#
-# The internal volume is then adjusted by a piecewise linear time varying
-# function.  Thus, the total volume is 7 plus the addition at the particular
-# time.
-#
-#  Time |  Addition  | Total volume
-#   0   |    0.0     |     7.0
-#   1   |    3.0     |    10.0
-#   2   |    7.0     |    14.0
-#   3   |   -3.0     |     4.0
+# The internal volume is scaled by two and adjusted by negative seven.  Thus,
+#   the net result is seven.
 #
 
 [Mesh]
@@ -30,11 +22,6 @@
     x = '0. 1. 2. 3.'
     y = '0. 0. 1e-2 0.'
     scale_factor = 0.5
-  [../]
-  [./addition]
-    type = PiecewiseLinear
-    x = '0. 1. 2. 3.'
-    y = '0. 3. 7. -3.'
   [../]
 []
 
@@ -129,7 +116,8 @@
   [./internalVolume]
     type = InternalVolume
     boundary = 100
-    addition = addition
+    scale_factor = 2
+    addition = -7
     execute_on = 'initial timestep_end'
   [../]
 

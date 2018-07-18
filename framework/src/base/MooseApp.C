@@ -1,11 +1,16 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/*               DO NOT MODIFY THIS HEADER                      */
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*           (c) 2010 Battelle Energy Alliance, LLC             */
+/*                   ALL RIGHTS RESERVED                        */
+/*                                                              */
+/*          Prepared by Battelle Energy Alliance, LLC           */
+/*            Under Contract No. DE-AC07-05ID14517              */
+/*            With the U. S. Department of Energy               */
+/*                                                              */
+/*            See COPYRIGHT for full restrictions               */
+/****************************************************************/
 
 // MOOSE includes
 #include "MooseApp.h"
@@ -32,7 +37,6 @@
 #include "JsonSyntaxTree.h"
 #include "JsonInputFileFormatter.h"
 #include "SONDefinitionFormatter.h"
-#include "RelationshipManager.h"
 
 // Regular expression includes
 #include "pcrecpp.h"
@@ -55,7 +59,7 @@ template <>
 InputParameters
 validParams<MooseApp>()
 {
-  InputParameters params = emptyInputParameters();
+  InputParameters params;
 
   params.addCommandLineParam<bool>(
       "display_version", "-v --version", false, "Print application version");
@@ -263,9 +267,6 @@ MooseApp::MooseApp(InputParameters parameters)
 
   if (getParam<bool>("error_deprecated") && getParam<bool>("allow_deprecated"))
     mooseError("Both error deprecated and allowed deprecated were set.");
-
-  if (_check_input && isParamValid("recover"))
-    mooseError("Cannot run --check-input with --recover. Recover files might not exist");
 }
 
 MooseApp::~MooseApp()
@@ -303,14 +304,6 @@ MooseApp::getPrintableVersion() const
 void
 MooseApp::setupOptions()
 {
-  // MOOSE was updated to have the ability to register execution flags in similar fashion as
-  // objects. However, this change requires all *App.C/h files to be updated with the new
-  // registerExecFlags method. To avoid breaking all applications the default MOOSE flags
-  // are added if nothing has been added to this point. In the future this could go away or
-  // perhaps be a warning.
-  if (_execute_flags.items().empty())
-    Moose::registerExecFlags(_factory);
-
   // Print the header, this is as early as possible
   std::string hdr(header() + "\n");
   if (multiAppLevel() > 0)
@@ -520,13 +513,6 @@ MooseApp::setupOptions()
     }
 
     _parser.parse(_input_filename);
-
-    if (isParamValid("mesh_only"))
-    {
-      _syntax.registerTaskName("mesh_only", true);
-      _syntax.addDependency("mesh_only", "setup_mesh_complete");
-      _action_warehouse.setFinalTask("mesh_only");
-    }
     _action_warehouse.build();
   }
   else
@@ -557,15 +543,20 @@ MooseApp::getOutputFileBase()
 void
 MooseApp::runInputFile()
 {
+  std::string mesh_file_name;
+  if (!_ready_to_exit && isParamValid("mesh_only"))
+  {
+    meshOnly(getParam<std::string>("mesh_only"));
+    _ready_to_exit = true;
+  }
+
   // If ready to exit has been set, then just return
   if (_ready_to_exit)
     return;
 
   _action_warehouse.executeAllActions();
 
-  if (isParamValid("mesh_only"))
-    _ready_to_exit = true;
-  else if (getParam<bool>("list_constructed_objects"))
+  if (getParam<bool>("list_constructed_objects"))
   {
     // TODO: ask multiapps for their constructed objects
     std::vector<std::string> obj_list = _factory.getConstructedObjects();
@@ -574,6 +565,7 @@ MooseApp::runInputFile()
       Moose::out << name << "\n";
     Moose::out << "**END OBJECT DATA**\n" << std::endl;
     _ready_to_exit = true;
+    return;
   }
 }
 
@@ -628,6 +620,59 @@ bool
 MooseApp::hasRecoverFileBase()
 {
   return !_recover_base.empty();
+}
+
+void
+MooseApp::meshOnly(std::string mesh_file_name)
+{
+  /**
+   * These actions should be the minimum set necessary to generate and output
+   * a Mesh.
+   */
+  _action_warehouse.executeActionsWithAction("meta_action");
+  _action_warehouse.executeActionsWithAction("set_global_params");
+  _action_warehouse.executeActionsWithAction("setup_mesh");
+  _action_warehouse.executeActionsWithAction("add_partitioner");
+  _action_warehouse.executeActionsWithAction("init_mesh");
+  _action_warehouse.executeActionsWithAction("prepare_mesh");
+  _action_warehouse.executeActionsWithAction("add_mesh_modifier");
+  _action_warehouse.executeActionsWithAction("execute_mesh_modifiers");
+  _action_warehouse.executeActionsWithAction("uniform_refine_mesh");
+  _action_warehouse.executeActionsWithAction("setup_mesh_complete");
+
+  std::shared_ptr<MooseMesh> & mesh = _action_warehouse.mesh();
+
+  // If no argument specified or if the argument following --mesh-only starts
+  // with a dash, try to build an output filename based on the input mesh filename.
+  if (mesh_file_name.empty() || (mesh_file_name.find('-') == 0))
+  {
+    mesh_file_name = _parser.getFileName();
+    size_t pos = mesh_file_name.find_last_of('.');
+
+    // Default to writing out an ExodusII mesh base on the input filename.
+    mesh_file_name = mesh_file_name.substr(0, pos) + "_in.e";
+  }
+
+  // If we're writing an Exodus file, write the Mesh using its logical
+  // element dimension rather than the spatial dimension, unless it's
+  // a 1D Mesh.  One reason to prefer this approach is that sidesets
+  // are displayed incorrectly for 2D triangular elements in both
+  // Paraview and Cubit if num_dim==3 in the Exodus file. We do the
+  // same thing in MOOSE's Exodus Output object, so we are mimicking
+  // that behavior here.
+  if (mesh_file_name.find(".e") + 2 == mesh_file_name.size())
+  {
+    ExodusII_IO exio(mesh->getMesh());
+    if (mesh->getMesh().mesh_dimension() != 1)
+      exio.use_mesh_dimension_instead_of_spatial_dimension(true);
+
+    exio.write(mesh_file_name);
+  }
+  else
+  {
+    // Just write the file using the name requested by the user.
+    mesh->getMesh().write(mesh_file_name);
+  }
 }
 
 void
@@ -1279,64 +1324,4 @@ MooseApp::createMinimalApp()
   }
 
   _action_warehouse.build();
-}
-
-void
-MooseApp::addExecFlag(const ExecFlagType & flag)
-{
-  if (flag.id() == MooseEnumItem::INVALID_ID)
-  {
-    // It is desired that users when creating ExecFlagTypes should not worry about needing
-    // to assign a name and an ID. However, the ExecFlagTypes created by users are global constants
-    // and the ID to be assigned can't be known at construction time of this global constant, it is
-    // only known when it is added to this object (ExecFlagEnum). Therefore, this const cast allows
-    // the ID to be set after construction. This was the lesser of two evils: const_cast or
-    // friend class with mutable members.
-    ExecFlagType & non_const_flag = const_cast<ExecFlagType &>(flag);
-    non_const_flag.setID(_execute_flags.getNextValidID());
-  }
-  _execute_flags.addAvailableFlags(flag);
-}
-
-bool
-MooseApp::hasRelationshipManager(const std::string & name) const
-{
-  return std::find_if(_relationship_managers.begin(),
-                      _relationship_managers.end(),
-                      [&name](const std::shared_ptr<RelationshipManager> & rm) {
-                        return rm->name() == name;
-                      }) != _relationship_managers.end();
-}
-
-void
-MooseApp::addRelationshipManager(std::shared_ptr<RelationshipManager> relationship_manager)
-{
-  auto name = relationship_manager->name();
-  if (hasRelationshipManager(name))
-    mooseError("Duplicate RelationshipManager added: \"", name, "\"");
-
-  _relationship_managers.emplace_back(relationship_manager);
-}
-
-void
-MooseApp::attachRelationshipManagers(Moose::RelationshipManagerType rm_type)
-{
-  for (auto & rm : _relationship_managers)
-    rm->attachRelationshipManagers(rm_type);
-}
-
-std::vector<std::pair<std::string, std::string>>
-MooseApp::getRelationshipManagerInfo()
-{
-  std::vector<std::pair<std::string, std::string>> info_strings;
-  info_strings.reserve(_relationship_managers.size());
-
-  for (const auto & rm : _relationship_managers)
-  {
-    auto info = rm->getInfo();
-    if (info.size())
-      info_strings.emplace_back(std::make_pair(Moose::stringify(rm->getType()), info));
-  }
-
-  return info_strings;
 }

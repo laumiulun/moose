@@ -1,12 +1,3 @@
-#* This file is part of the MOOSE framework
-#* https://www.mooseframework.org
-#*
-#* All rights reserved, see COPYRIGHT for full restrictions
-#* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-#*
-#* Licensed under LGPL 2.1, please see LICENSE for details
-#* https://www.gnu.org/licenses/lgpl-2.1.html
-
 def print_error(msg):
     print("\nError starting peacock: %s\n" % msg)
     print("You need to use the miniconda module. Run:")
@@ -101,4 +92,4 @@ def check_pandas():
     return True
 
 def has_requirements():
-    return check_qt() and check_matplotlib() and check_vtk() and check_pandas()
+    return check_qt() and check_vtk() and check_matplotlib() and check_pandas()

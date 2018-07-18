@@ -1,14 +1,18 @@
 #pylint: disable=missing-docstring
-#* This file is part of the MOOSE framework
-#* https://www.mooseframework.org
-#*
-#* All rights reserved, see COPYRIGHT for full restrictions
-#* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-#*
-#* Licensed under LGPL 2.1, please see LICENSE for details
-#* https://www.gnu.org/licenses/lgpl-2.1.html
+####################################################################################################
+#                                    DO NOT MODIFY THIS HEADER                                     #
+#                   MOOSE - Multiphysics Object Oriented Simulation Environment                    #
+#                                                                                                  #
+#                              (c) 2010 Battelle Energy Alliance, LLC                              #
+#                                       ALL RIGHTS RESERVED                                        #
+#                                                                                                  #
+#                            Prepared by Battelle Energy Alliance, LLC                             #
+#                               Under Contract No. DE-AC07-05ID14517                               #
+#                               With the U. S. Department of Energy                                #
+#                                                                                                  #
+#                               See COPYRIGHT for full restrictions                                #
+####################################################################################################
 #pylint: enable=missing-docstring
-
 import os
 import multiprocessing
 import shutil
@@ -35,7 +39,7 @@ def build_options(parser):
                         help="The YAML file containing the locations containing the markdown "
                              "files (Default: %(default)s). If the file doesn't exists the default "
                              "is {'default':{'base':'docs/content', 'include':'docs/content/*'}}")
-    if os.path.realpath(MooseDocs.ROOT_DIR) == os.path.realpath(MooseDocs.MOOSE_DIR):
+    if MooseDocs.ROOT_DIR == MooseDocs.MOOSE_DIR:
         parser.add_argument('--init', action='store_true', help="Initialize and/or update the "
                                                                 "large media submodule if needed.")
     parser.add_argument('--dump', action='store_true',
@@ -59,18 +63,13 @@ def build_options(parser):
                              "ignored for this case.")
     parser.add_argument('--no-livereload', action='store_true',
                         help="When --serve is used this flag disables the live reloading.")
-    parser.add_argument('--css', type=str, metavar='*.css',
-                        help="Path to custom CSS to use. Important: You should continue to "
-                             "import the default within your custom css file for best results. "
-                             "To do so, add the following line to the top of your css: @import "
-                             "url(\"moose.css\");")
 
 class WebsiteBuilder(common.Builder):
     """
     Builder object for creating websites.
     """
 
-    def __init__(self, content=None, custom_css=None, **kwargs):
+    def __init__(self, content=None, **kwargs):
         super(WebsiteBuilder, self).__init__(**kwargs)
 
         if (content is None) or (not os.path.isfile(content)):
@@ -82,7 +81,6 @@ class WebsiteBuilder(common.Builder):
             content = MooseDocs.yaml_load(content)
 
         self._content = content
-        self._custom_css = custom_css
 
     def buildNodes(self):
         return common.moose_docs_file_tree(self._content)
@@ -102,8 +100,6 @@ class WebsiteBuilder(common.Builder):
                     shutil.rmtree(dest)
                 shutil.copytree(loc, dest)
 
-        if self._custom_css and os.path.exists(self._custom_css):
-            shutil.copy(self._custom_css, os.path.join(self._site_dir, 'css'))
 
 class MooseDocsWatcher(livereload.watcher.Watcher):
     """
@@ -171,24 +167,20 @@ def build(config_file=None, site_dir=None, num_threads=None, no_livereload=False
         os.makedirs(site_dir)
 
     # Check submodule for large_media
-    if os.path.realpath(MooseDocs.ROOT_DIR) == os.path.realpath(MooseDocs.MOOSE_DIR):
+    if MooseDocs.ROOT_DIR == MooseDocs.MOOSE_DIR:
         status = common.submodule_status()
-        large_media = os.path.realpath(os.path.join(MooseDocs.ROOT_DIR, 'docs', 'content',
-                                                    'media', 'large_media'))
-        for submodule, status in status.iteritems():
-            if ((os.path.realpath(os.path.join(MooseDocs.MOOSE_DIR, submodule)) == large_media)
-                    and (status == '-')):
-                if init:
-                    subprocess.call(['git', 'submodule', 'update', '--init',
-                                     'docs/content/media/large_media'], cwd=MooseDocs.MOOSE_DIR)
-                else:
-                    LOG.warning("The 'large_media' submodule for storing images above 1MB is not "
-                                "initialized, thus some images will not be visible within the "
-                                "generated website. Run the build command with the --init flag to "
-                                "initialize the submodule.")
+        if status['docs/content/media/large_media'] == '-':
+            if init:
+                subprocess.call(['git', 'submodule', 'update', '--init',
+                                 'docs/content/media/large_media'], cwd=MooseDocs.MOOSE_DIR)
+            else:
+                LOG.warning("The 'large_media' submodule for storing images above 1MB is not "
+                            "initialized, thus some images will not be visible within the "
+                            "generated website. Run the build command with the --init flag to "
+                            "initialize the submodule.")
 
     # Check media files size
-    if os.path.realpath(MooseDocs.ROOT_DIR) == os.path.realpath(MooseDocs.MOOSE_DIR):
+    if MooseDocs.ROOT_DIR == MooseDocs.MOOSE_DIR:
         media = os.path.join(MooseDocs.MOOSE_DIR, 'docs', 'content', 'media')
         ignore = set()
         for base, _, files in os.walk(os.path.join(media, 'large_media')):
@@ -204,22 +196,10 @@ def build(config_file=None, site_dir=None, num_threads=None, no_livereload=False
 
     # Create the markdown parser
     config = MooseDocs.load_config(config_file, template=template, template_args=template_args)
-
-    # Add custom CSS to the config
-    if template_args['css']:
-        if os.path.exists(template_args['css']):
-            config['MooseDocs.extensions.template']['template_args']['moose_css'] = 'css/' +\
-                os.path.basename(template_args['css'])
-        else:
-            LOG.warning("supplied css file does not exist")
-
     parser = MooseMarkdown(config)
 
     # Create the builder object and build the pages
-    builder = WebsiteBuilder(parser=parser,
-                             site_dir=site_dir,
-                             content=content,
-                             custom_css=template_args['css'])
+    builder = WebsiteBuilder(parser=parser, site_dir=site_dir, content=content)
     builder.init()
     if dump:
         print builder

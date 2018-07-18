@@ -1,11 +1,9 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*          All contents are licensed under LGPL V2.1           */
+/*             See LICENSE for full restrictions                */
+/****************************************************************/
 
 // StochasticTools includes
 #include "SamplerPostprocessorTransfer.h"
@@ -17,19 +15,24 @@ template <>
 InputParameters
 validParams<SamplerPostprocessorTransfer>()
 {
-  InputParameters params = validParams<MultiAppVectorPostprocessorTransfer>();
+  InputParameters params = validParams<MultiAppTransfer>();
   params.addClassDescription("Transfers data to and from Postprocessors on the sub-application.");
+  params.addParam<VectorPostprocessorName>(
+      "results",
+      "Name of the StochasticResults object that the results are to be stored or extracted.");
+  params.addParam<std::string>(
+      "postprocessor", "Name of the Postprocessor on the sub-application to transfer to or from.");
   params.set<MooseEnum>("direction") = "from_multiapp";
-  params.set<std::string>("vector_name") = "";
   params.suppressParameter<MooseEnum>("direction");
-  params.suppressParameter<std::string>("vector_name");
   return params;
 }
 
 SamplerPostprocessorTransfer::SamplerPostprocessorTransfer(const InputParameters & parameters)
-  : MultiAppVectorPostprocessorTransfer(parameters),
+  : MultiAppTransfer(parameters),
+    _results_name(getParam<VectorPostprocessorName>("results")),
     _sampler_multi_app(std::dynamic_pointer_cast<SamplerMultiApp>(_multi_app).get()),
-    _sampler(_sampler_multi_app->getSampler())
+    _sampler(_sampler_multi_app->getSampler()),
+    _sub_pp_name(getParam<std::string>("postprocessor"))
 {
   if (!_sampler_multi_app)
     mooseError("The 'multi_app' must be a 'SamplerMultiApp.'");
@@ -39,7 +42,7 @@ void
 SamplerPostprocessorTransfer::initialSetup()
 {
   const ExecuteMooseObjectWarehouse<UserObject> & user_objects = _fe_problem.getUserObjects();
-  UserObject * uo = user_objects.getActiveObject(_master_vpp_name).get();
+  UserObject * uo = user_objects.getActiveObject(_results_name).get();
   _results = dynamic_cast<StochasticResults *>(uo);
 
   if (!_results)
@@ -49,7 +52,7 @@ SamplerPostprocessorTransfer::initialSetup()
 }
 
 void
-SamplerPostprocessorTransfer::executeFromMultiapp()
+SamplerPostprocessorTransfer::execute()
 {
   // Number of PP is equal to the number of MultiApps
   const unsigned int n = _multi_app->numGlobalApps();

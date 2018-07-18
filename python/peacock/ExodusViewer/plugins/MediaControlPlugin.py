@@ -1,12 +1,3 @@
-#* This file is part of the MOOSE framework
-#* https://www.mooseframework.org
-#*
-#* All rights reserved, see COPYRIGHT for full restrictions
-#* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-#*
-#* Licensed under LGPL 2.1, please see LICENSE for details
-#* https://www.gnu.org/licenses/lgpl-2.1.html
-
 import sys
 from PyQt5 import QtWidgets, QtCore
 from ExodusPlugin import ExodusPlugin
@@ -88,5 +79,5 @@ if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     filename = Testing.get_chigger_input('mug_blocks_out.e')
     widget, window = main()
-    window.onFileChanged(filename)
+    widget.initialize([filename])
     sys.exit(app.exec_())

@@ -1,11 +1,16 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/*               DO NOT MODIFY THIS HEADER                      */
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*           (c) 2010 Battelle Energy Alliance, LLC             */
+/*                   ALL RIGHTS RESERVED                        */
+/*                                                              */
+/*          Prepared by Battelle Energy Alliance, LLC           */
+/*            Under Contract No. DE-AC07-05ID14517              */
+/*            With the U. S. Department of Energy               */
+/*                                                              */
+/*            See COPYRIGHT for full restrictions               */
+/****************************************************************/
 
 #include "FileMesh.h"
 #include "Parser.h"
@@ -98,7 +103,8 @@ FileMesh::buildMesh()
       // and renumbering, at least at first.
       if (file == "LATEST")
       {
-        std::list<std::string> files = MooseUtils::listDir(path);
+        std::list<std::string> dir_list(1, path);
+        std::list<std::string> files = MooseUtils::getFilesInDirs(dir_list);
 
         // Fill in the name of the LATEST file so we can open it and read it.
         _file_name = MooseUtils::getLatestMeshCheckpointFile(files);
@@ -117,8 +123,7 @@ FileMesh::buildMesh()
         getMesh().allow_renumbering(false);
       }
 
-      if (!MooseUtils::pathExists(_file_name))
-        mooseError("cannot locate mesh file '", _file_name, "'");
+      MooseUtils::checkFileReadable(_file_name);
       getMesh().read(_file_name);
 
       if (restarting)

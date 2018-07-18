@@ -1,11 +1,9 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*          All contents are licensed under LGPL V2.1           */
+/*             See LICENSE for full restrictions                */
+/****************************************************************/
 
 #ifndef REFERENCERESIDUALPROBLEM_H
 #define REFERENCERESIDUALPROBLEM_H
@@ -27,23 +25,21 @@ public:
   ReferenceResidualProblem(const InputParameters & params);
   virtual ~ReferenceResidualProblem();
 
-  virtual void initialSetup() override;
-  virtual void timestepSetup() override;
+  virtual void initialSetup();
+  virtual void timestepSetup();
   void updateReferenceResidual();
-  virtual MooseNonlinearConvergenceReason
-  checkNonlinearConvergence(std::string & msg,
-                            const PetscInt it,
-                            const Real xnorm,
-                            const Real snorm,
-                            const Real fnorm,
-                            const Real rtol,
-                            const Real stol,
-                            const Real abstol,
-                            const PetscInt nfuncs,
-                            const PetscInt max_funcs,
-                            const PetscBool force_iteration,
-                            const Real ref_resid,
-                            const Real div_threshold) override;
+  virtual MooseNonlinearConvergenceReason checkNonlinearConvergence(std::string & msg,
+                                                                    const PetscInt it,
+                                                                    const Real xnorm,
+                                                                    const Real snorm,
+                                                                    const Real fnorm,
+                                                                    const Real rtol,
+                                                                    const Real stol,
+                                                                    const Real abstol,
+                                                                    const PetscInt nfuncs,
+                                                                    const PetscInt max_funcs,
+                                                                    const Real ref_resid,
+                                                                    const Real div_threshold);
 
   bool checkConvergenceIndividVars(const Real fnorm,
                                    const Real abstol,
@@ -77,9 +73,6 @@ protected:
   std::vector<Real> _refResid;
   std::vector<Real> _resid;
   ///@}
-
-  /// Local storage for the scaling factors applied to each of the variables to apply to _refResidVars.
-  std::vector<Real> _scaling_factors;
 };
 
 #endif /* REFERENCERESIDUALPROBLEM_H */

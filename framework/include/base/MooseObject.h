@@ -1,11 +1,16 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/*               DO NOT MODIFY THIS HEADER                      */
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*           (c) 2010 Battelle Energy Alliance, LLC             */
+/*                   ALL RIGHTS RESERVED                        */
+/*                                                              */
+/*          Prepared by Battelle Energy Alliance, LLC           */
+/*            Under Contract No. DE-AC07-05ID14517              */
+/*            With the U. S. Department of Energy               */
+/*                                                              */
+/*            See COPYRIGHT for full restrictions               */
+/****************************************************************/
 
 #ifndef MOOSEOBJECT_H
 #define MOOSEOBJECT_H
@@ -24,6 +29,14 @@ InputParameters validParams<MooseObject>();
 
 // needed to avoid #include cycle with MooseApp and MooseObject
 [[noreturn]] void callMooseErrorRaw(std::string & msg, MooseApp * app);
+
+/// returns a string representing a special parameter name that the parser injects into object
+/// parameters holding the file+linenum for the parameter.
+std::string paramLocName(std::string param);
+
+/// returns a string representing a special parameter name that the parser injects into object
+/// parameters holding the file+linenum for the parameter.
+std::string paramPathName(std::string param);
 
 /**
  * Every object that can be built by the factory should be derived from this class.
@@ -74,12 +87,12 @@ public:
   /**
    * Get the MooseApp this object is associated with.
    */
-  MooseApp & getMooseApp() const { return _app; }
+  MooseApp & getMooseApp() { return _app; }
 
   /**
    * Return the enabled status of the object.
    */
-  virtual bool enabled() const { return _enabled; }
+  virtual bool enabled() { return _enabled; }
 
   /**
    * Emits an error prefixed with the file and line number of the given param (from the input
@@ -91,8 +104,9 @@ public:
   [[noreturn]] void paramError(const std::string & param, Args... args)
   {
     auto prefix = param + ": ";
-    if (!_pars.inputLocation(param).empty())
-      prefix = _pars.inputLocation(param) + ": (" + _pars.paramFullpath(param) + ") ";
+    if (_pars.have_parameter<std::string>(paramLocName(param)))
+      prefix = _pars.get<std::string>(paramLocName(param)) + ": (" +
+               _pars.get<std::string>(paramPathName(param)) + ") ";
     mooseError(prefix, args...);
   }
 

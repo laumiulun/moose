@@ -106,12 +106,6 @@
     x = '  0   1   1.5'
     y = '-20 -40   -20'
   [../]
-
-  [./dts]
-    type = PiecewiseLinear
-    x = '0        0.5    1.0    1.5'
-    y = '0.015  0.015  0.005  0.005'
-  [../]
 []
 
 [SolidMechanics]
@@ -246,7 +240,8 @@
 
   [./TimeStepper]
     type = FunctionDT
-    function = dts
+    time_t  = '0        0.5    1.0    1.5'
+    time_dt = '0.015  0.015  0.005  0.005'
   [../]
 []
 

@@ -1,12 +1,9 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
-
+/****************************************************************/
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*          All contents are licensed under LGPL V2.1           */
+/*             See LICENSE for full restrictions                */
+/****************************************************************/
 #ifndef CONTACTMASTER_H
 #define CONTACTMASTER_H
 
@@ -37,14 +34,15 @@ class ContactMaster : public DiracKernel
 public:
   ContactMaster(const InputParameters & parameters);
 
-  virtual void timestepSetup() override;
+  virtual void jacobianSetup();
+  virtual void timestepSetup();
 
-  virtual void addPoints() override;
-  void computeContactForce(PenetrationInfo * pinfo, bool update_contact_set);
-  virtual Real computeQpResidual() override;
-  virtual Real computeQpJacobian() override;
+  virtual void addPoints();
+  void computeContactForce(PenetrationInfo * pinfo);
+  virtual Real computeQpResidual();
+  virtual Real computeQpJacobian();
 
-  virtual void updateContactStatefulData();
+  virtual void updateContactSet(bool beginning_of_step = false);
 
   static ContactFormulation contactFormulation(std::string name);
   static ContactModel contactModel(std::string name);
@@ -63,6 +61,7 @@ protected:
   const Real _friction_coefficient;
   const Real _tension_release;
   const Real _capture_tolerance;
+  bool _updateContactSet;
 
   NumericVector<Number> & _residual_copy;
 

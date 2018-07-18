@@ -1,11 +1,9 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*          All contents are licensed under LGPL V2.1           */
+/*             See LICENSE for full restrictions                */
+/****************************************************************/
 
 #include "DiscreteNucleationInserter.h"
 #include "libmesh/parallel_algebra.h"
@@ -23,7 +21,9 @@ validParams<DiscreteNucleationInserter>()
       "probability", "Probability density for inserting a discrete nucleus");
   params.addRequiredParam<Real>("hold_time", "Time to keep each nucleus active");
   params.addParam<Point>("test", "Insert a fixed nucleus at a point in the simulation cell");
-  params.set<ExecFlagEnum>("execute_on") = EXEC_TIMESTEP_END;
+  MultiMooseEnum setup_options(SetupInterface::getExecuteOptions());
+  setup_options = "timestep_end";
+  params.set<MultiMooseEnum>("execute_on") = setup_options;
   return params;
 }
 

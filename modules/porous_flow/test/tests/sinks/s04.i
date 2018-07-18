@@ -125,9 +125,6 @@
   [../]
   [./yval]
   [../]
-  [./pt_shift]
-    initial_condition = 0.3
-  [../]
 []
 
 [ICs]
@@ -255,8 +252,7 @@
   [./flux]
     type = PorousFlowPiecewiseLinearSink
     boundary = 'right'
-    PT_shift = pt_shift
-    pt_vals = '0.0 0.5'
+    pt_vals = '0.3 0.8'
     multipliers = '0.5 1'
     variable = pp
     use_mobility = false

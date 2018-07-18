@@ -1,8 +1,7 @@
-# Cavity Pressure Postprocessor
-!syntax description /Postprocessors/CavityPressurePostprocessor
+<!-- MOOSE Documentation Stub: Remove this when content is added. -->
 
-## Description
-The `CavityPressurePostprocessor` is used to store the value of the initial moles and the current pressure for an internal value; these quantities are calculated by the [CavityPressureUserObject](/UserObjects/tensor_mechanics/CavityPressureUserObject.md).
+# CavityPressurePostprocessor
+!syntax description /Postprocessors/CavityPressurePostprocessor
 
 !syntax parameters /Postprocessors/CavityPressurePostprocessor
 

@@ -1,12 +1,3 @@
-#* This file is part of the MOOSE framework
-#* https://www.mooseframework.org
-#*
-#* All rights reserved, see COPYRIGHT for full restrictions
-#* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-#*
-#* Licensed under LGPL 2.1, please see LICENSE for details
-#* https://www.gnu.org/licenses/lgpl-2.1.html
-
 import sys
 if sys.version_info[0:2] != (2, 7):
     print("python 2.7 is required to run the test harness")
@@ -197,11 +188,8 @@ class TestHarness:
             self.base_dir = os.getcwd()
             for dirpath, dirnames, filenames in os.walk(self.base_dir, followlinks=True):
                 # Prune submdule paths when searching for tests
-
-                dir_name = os.path.basename(dirpath)
-                if (self.base_dir != dirpath and os.path.exists(os.path.join(dirpath, '.git'))) or dir_name in [".git", ".svn"]:
+                if self.base_dir != dirpath and os.path.exists(os.path.join(dirpath, '.git')):
                     dirnames[:] = []
-                    filenames[:] = []
 
                 # walk into directories that aren't contrib directories
                 if "contrib" not in os.path.relpath(dirpath, os.getcwd()):
@@ -246,7 +234,7 @@ class TestHarness:
             self.cleanup()
 
             # flags for the TestHarness start at the high bit
-            if self.num_failed or self.scheduler.schedulerError():
+            if self.num_failed:
                 self.error_code = self.error_code | 0x80
 
         except KeyboardInterrupt:
@@ -350,7 +338,7 @@ class TestHarness:
         elif self.num_failed > self.options.max_fails:
             tester.setStatus('Max Fails Exceeded', tester.bucket_fail)
         elif tester.parameters().isValid('have_errors') and tester.parameters()['have_errors']:
-            tester.setStatus('Parser Error', tester.bucket_fail)
+            tester.setStatus('Parser Error', tester.bucket_skip)
 
     # This method splits a lists of tests into two pieces each, the first piece will run the test for
     # approx. half the number of timesteps and will write out a restart file.  The second test will
@@ -359,7 +347,7 @@ class TestHarness:
         new_tests = []
 
         for part1 in testers:
-            if part1.parameters()['recover'] == True and not part1.parameters()['check_input']:
+            if part1.parameters()['recover'] == True:
                 # Clone the test specs
                 part2 = copy.deepcopy(part1)
 
@@ -383,9 +371,6 @@ class TestHarness:
 
                 new_tests.append(part2)
 
-            elif part1.parameters()['recover'] == True and part1.parameters()['check_input']:
-                part1.setStatus('SYNTAX ONLY TEST', part1.bucket_silent)
-
         testers.extend(new_tests)
         return testers
 
@@ -407,33 +392,38 @@ class TestHarness:
 
     # Format the caveats contained in tester so they are easy to read when printed
     def formatCaveats(self, tester):
+        result = ''
+
         # PASS and DRY_RUN fall into this catagory
         if tester.didPass():
-            result = tester.success_message
             if self.options.extra_info:
                 for check in self.options._checks.keys():
                     if tester.specs.isValid(check) and not 'ALL' in tester.specs[check]:
                         tester.addCaveats(check)
+            if tester.getCaveats():
+                result = '[' + ', '.join(tester.getCaveats()).upper() + '] ' + tester.getSuccessMessage()
+            else:
+                result = tester.getSuccessMessage()
 
         # FAIL, DIFF and DELETED fall into this catagory
         elif tester.didFail() or tester.didDiff() or tester.isDeleted():
             result = 'FAILED (%s)' % tester.getStatusMessage()
 
-        # Silent tests have no results
-        elif tester.isSilent():
-            result = ''
-
-        # Some other finished status... skipped, queued, etc
+        # SKIPPED tests fall into this catagory
+        elif tester.isSkipped():
+            if tester.getCaveats():
+                result = '[' + ', '.join(tester.getCaveats()).upper() + '] skipped (' + tester.getStatusMessage() + ')'
+            else:
+                result = 'skipped (' + tester.getStatusMessage() + ')'
         else:
             result = tester.getStatusMessage()
-
         return result
 
     # Print and return formatted current tester status output
     def printResult(self, tester_data):
         """ Method to print a testers status to the screen """
         tester = tester_data.getTester()
-        formatted_results = None
+        caveat_formatted_results = None
 
         # Print what ever status the tester has at the time
         if self.canPrint(tester):
@@ -452,9 +442,9 @@ class TestHarness:
                     output = test_name + ("\n" + test_name).join(lines)
                     print(output)
 
-            formatted_results = self.formatCaveats(tester)
-            print(util.formatResult(tester_data, formatted_results, self.options))
-        return formatted_results
+            caveat_formatted_results = self.formatCaveats(tester)
+            print(util.formatResult(tester_data, caveat_formatted_results, self.options))
+        return caveat_formatted_results
 
     def handleTestStatus(self, tester_data):
         """ Method to handle a testers status """
@@ -464,7 +454,7 @@ class TestHarness:
         result = self.printResult(tester_data)
 
         # Test is finished and had some results to print
-        if tester.isFinished() and self.canPrint(tester):
+        if result and tester.isFinished():
             timing = tester_data.getTiming()
 
             # Store these results to a table we will use when we print final results
@@ -500,18 +490,18 @@ class TestHarness:
         # Print the results table again if a bunch of output was spewed to the screen between
         # tests as they were running
         if len(self.parse_errors) > 0:
-            print('\n\nParser Errors:\n' + ('-' * (util.TERM_COLS)))
+            print('\n\nParser Errors:\n' + ('-' * (util.TERM_COLS-1)))
             for err in self.parse_errors:
                 print(util.colorText(err, 'RED', html=True, colored=self.options.colored, code=self.options.code))
 
         if (self.options.verbose or (self.num_failed != 0 and not self.options.quiet)) and not self.options.dry_run:
-            print('\n\nFinal Test Results:\n' + ('-' * (util.TERM_COLS)))
+            print('\n\nFinal Test Results:\n' + ('-' * (util.TERM_COLS-1)))
             for (tester_data, result, timing) in sorted(self.test_table, key=lambda x: x[1], reverse=True):
                 print(util.formatResult(tester_data, result, self.options))
 
         time = clock() - self.start_time
 
-        print('-' * (util.TERM_COLS))
+        print('-' * (util.TERM_COLS-1))
 
         # Mask off TestHarness error codes to report parser errors
         fatal_error = ''
@@ -730,9 +720,6 @@ class TestHarness:
         if opts.check_input and opts.no_check_input:
             print('ERROR: --check-input and --no-check-input can not be used together')
             sys.exit(1)
-        if opts.check_input and opts.enable_recover:
-            print('ERROR: --check-input and --recover can not be used together')
-            sys.exit(1)
 
         # Update any keys from the environment as necessary
         if not self.options.method:
@@ -768,3 +755,4 @@ class TestHarness:
 
     def getOptions(self):
         return self.options
+

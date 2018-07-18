@@ -1,12 +1,3 @@
-#* This file is part of the MOOSE framework
-#* https://www.mooseframework.org
-#*
-#* All rights reserved, see COPYRIGHT for full restrictions
-#* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-#*
-#* Licensed under LGPL 2.1, please see LICENSE for details
-#* https://www.gnu.org/licenses/lgpl-2.1.html
-
 from QueueManager import QueueManager
 import os, re
 
@@ -130,20 +121,10 @@ class RunPBS(QueueManager):
         if job_state:
             # Job is finished
             if job_state.group(1) == 'F':
-                # The exit code PBS recorded when the application exited
-                tester.exit_code = int(re.search(r'Exit_status = (\d+)', output).group(1))
-
-                # non-zero exit codes are handled properly elsewhere (as a CRASH). So do not set any
-                # failed buckets for finished PBS jobs. Instead, add a message (caveat) as to why it
-                # failed (if we know).
+                reason = 'WAITING'
 
                 # Set the bucket that allows processResults to commence
-                reason = 'WAITING'
                 bucket = tester.bucket_waiting_processing
-
-                # NOTE: 271 occurs when when PBS ended the job prematurely (walltime, etc)
-                if tester.exit_code == 271:
-                    tester.addCaveats('Killed by PBS')
 
             # Job is currently running
             elif job_state.group(1) == 'R':

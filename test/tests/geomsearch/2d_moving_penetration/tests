@@ -5,7 +5,6 @@
     exodiff = 'pl_test1q_out.e'
     group = 'geometric'
     custom_cmp = exclude_elem_id.cmp
-    allow_warnings = true
   [../]
 
   [./pl_test1qtt]
@@ -14,7 +13,6 @@
     exodiff = 'pl_test1qtt_out.e'
     group = 'geometric'
     custom_cmp = exclude_elem_id.cmp
-    allow_warnings = true
   [../]
 
   [./pl_test2qtt]
@@ -23,7 +21,6 @@
     exodiff = 'pl_test2qtt_out.e'
     group = 'geometric'
     custom_cmp = exclude_elem_id.cmp
-    allow_warnings = true
   [../]
 
   [./pl_test3qtt]
@@ -33,7 +30,6 @@
     abs_zero = 1e-09
     group = 'geometric'
     custom_cmp = exclude_elem_id.cmp
-    allow_warnings = true
   [../]
 
   [./pl_test2q]
@@ -42,7 +38,6 @@
     exodiff = 'pl_test2q_out.e'
     group = 'geometric'
     custom_cmp = exclude_elem_id.cmp
-    allow_warnings = true
   [../]
 
   [./pl_test1tt]
@@ -51,7 +46,6 @@
     exodiff = 'pl_test1tt_out.e'
     group = 'geometric'
     custom_cmp = exclude_elem_id.cmp
-    allow_warnings = true
   [../]
 
   [./pl_test4qtt]
@@ -61,7 +55,6 @@
     abs_zero = 1e-09
     group = 'geometric'
     custom_cmp = exclude_elem_id.cmp
-    allow_warnings = true
   [../]
 
   [./pl_test4q]
@@ -71,7 +64,6 @@
     abs_zero = 1e-09
     group = 'geometric'
     custom_cmp = exclude_elem_id.cmp
-    allow_warnings = true
   [../]
 
   [./pl_test4qns]
@@ -81,7 +73,6 @@
     abs_zero = 1e-09
     group = 'geometric'
     custom_cmp = exclude_elem_id.cmp
-    allow_warnings = true
   [../]
 
   [./pl_test4qnns]
@@ -91,7 +82,6 @@
     abs_zero = 1e-09
     group = 'geometric'
     custom_cmp = exclude_elem_id.cmp
-    allow_warnings = true
   [../]
 
   [./pl_test1]
@@ -100,7 +90,6 @@
     exodiff = 'pl_test1_out.e'
     group = 'geometric'
     custom_cmp = exclude_elem_id.cmp
-    allow_warnings = true
   [../]
 
   [./pl_test2tt]
@@ -109,7 +98,6 @@
     exodiff = 'pl_test2tt_out.e'
     group = 'geometric'
     custom_cmp = exclude_elem_id.cmp
-    allow_warnings = true
   [../]
 
   [./pl_test3]
@@ -118,7 +106,6 @@
     exodiff = 'pl_test3_out.e'
     group = 'geometric'
     custom_cmp = exclude_elem_id.cmp
-    allow_warnings = true
   [../]
 
   [./pl_test3ns]
@@ -127,7 +114,6 @@
     exodiff = 'pl_test3ns_out.e'
     group = 'geometric'
     custom_cmp = exclude_elem_id.cmp
-    allow_warnings = true
   [../]
 
   [./pl_test3nns]
@@ -136,7 +122,6 @@
     exodiff = 'pl_test3nns_out.e'
     group = 'geometric'
     custom_cmp = exclude_elem_id.cmp
-    allow_warnings = true
   [../]
 
   [./pl_test2]
@@ -145,7 +130,6 @@
     exodiff = 'pl_test2_out.e'
     group = 'geometric'
     custom_cmp = exclude_elem_id.cmp
-    allow_warnings = true
   [../]
 
   [./pl_test4]
@@ -154,7 +138,6 @@
     exodiff = 'pl_test4_out.e'
     group = 'geometric'
     custom_cmp = exclude_elem_id.cmp
-    allow_warnings = true
   [../]
 
   [./pl_test4ns]
@@ -163,7 +146,6 @@
     exodiff = 'pl_test4ns_out.e'
     group = 'geometric'
     custom_cmp = exclude_elem_id.cmp
-    allow_warnings = true
   [../]
 
   [./pl_test4nns]
@@ -172,7 +154,6 @@
     exodiff = 'pl_test4nns_out.e'
     group = 'geometric'
     custom_cmp = exclude_elem_id.cmp
-    allow_warnings = true
   [../]
 
   [./pl_test3q]
@@ -181,7 +162,6 @@
     exodiff = 'pl_test3q_out.e'
     group = 'geometric'
     custom_cmp = exclude_elem_id.cmp
-    allow_warnings = true
   [../]
 
   [./pl_test3qns]
@@ -190,7 +170,6 @@
     exodiff = 'pl_test3qns_out.e'
     group = 'geometric'
     custom_cmp = exclude_elem_id.cmp
-    allow_warnings = true
   [../]
 
   [./pl_test3qnns]
@@ -199,7 +178,6 @@
     exodiff = 'pl_test3qnns_out.e'
     group = 'geometric'
     custom_cmp = exclude_elem_id.cmp
-    allow_warnings = true
   [../]
 
   [./pl_test4tt]
@@ -208,7 +186,6 @@
     exodiff = 'pl_test4tt_out.e'
     group = 'geometric'
     custom_cmp = exclude_elem_id.cmp
-    allow_warnings = true
   [../]
 
   [./pl_test3tt]
@@ -217,7 +194,6 @@
     exodiff = 'pl_test3tt_out.e'
     group = 'geometric'
     custom_cmp = exclude_elem_id.cmp
-    allow_warnings = true
   [../]
 
   [./restart]
@@ -226,7 +202,6 @@
     exodiff = 'restart_out.e'
     group = 'geometric'
     custom_cmp = exclude_elem_id.cmp
-    allow_warnings = true
   [../]
 
   [./restart2]
@@ -237,6 +212,5 @@
     custom_cmp = exclude_elem_id.cmp
     prereq = restart
     recover = false # Turns out this isn't working in HEAD - we have more work to properly recover a restart test #5877
-    allow_warnings = true
   [../]
 []

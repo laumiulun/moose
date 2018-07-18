@@ -1,11 +1,3 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
 #include "PorousFlowApp.h"
 #include "Moose.h"
 #include "TensorMechanicsApp.h"
@@ -27,8 +19,6 @@
 #include "PorousFlowCapillaryPressureRSC.h"
 #include "PorousFlowCapillaryPressureBW.h"
 #include "PorousFlowCapillaryPressureBC.h"
-#include "PorousFlowWaterNCG.h"
-#include "PorousFlowBrineCO2.h"
 
 // DiracKernels
 #include "PorousFlowSquarePulsePointSource.h"
@@ -103,7 +93,6 @@
 #include "PorousFlowFullySaturatedDarcyFlow.h"
 #include "PorousFlowFullySaturatedHeatAdvection.h"
 #include "PorousFlowFullySaturatedMassTimeDerivative.h"
-#include "PorousFlowExponentialDecay.h"
 
 // BoundaryConditions
 #include "PorousFlowSink.h"
@@ -113,15 +102,10 @@
 
 // AuxKernels
 #include "PorousFlowDarcyVelocityComponent.h"
-#include "PorousFlowDarcyVelocityComponentLowerDimensional.h"
 #include "PorousFlowPropertyAux.h"
 
 // Functions
 #include "MovingPlanarFront.h"
-
-// ICs
-#include "PorousFlowFluidStateWaterNCGIC.h"
-#include "PorousFlowFluidStateBrineCO2IC.h"
 
 template <>
 InputParameters
@@ -140,9 +124,6 @@ PorousFlowApp::PorousFlowApp(const InputParameters & parameters) : MooseApp(para
   Moose::associateSyntax(_syntax, _action_factory);
   PorousFlowApp::associateSyntaxDepends(_syntax, _action_factory);
   PorousFlowApp::associateSyntax(_syntax, _action_factory);
-
-  Moose::registerExecFlags(_factory);
-  PorousFlowApp::registerExecFlags(_factory);
 }
 
 PorousFlowApp::~PorousFlowApp() {}
@@ -184,8 +165,6 @@ PorousFlowApp::registerObjects(Factory & factory)
   registerUserObject(PorousFlowCapillaryPressureRSC);
   registerUserObject(PorousFlowCapillaryPressureBW);
   registerUserObject(PorousFlowCapillaryPressureBC);
-  registerUserObject(PorousFlowWaterNCG);
-  registerUserObject(PorousFlowBrineCO2);
 
   // DiracKernels
   registerDiracKernel(PorousFlowSquarePulsePointSource);
@@ -260,7 +239,6 @@ PorousFlowApp::registerObjects(Factory & factory)
   registerKernel(PorousFlowFullySaturatedDarcyFlow);
   registerKernel(PorousFlowFullySaturatedHeatAdvection);
   registerKernel(PorousFlowFullySaturatedMassTimeDerivative);
-  registerKernel(PorousFlowExponentialDecay);
 
   // BoundaryConditions
   registerBoundaryCondition(PorousFlowSink);
@@ -270,15 +248,10 @@ PorousFlowApp::registerObjects(Factory & factory)
 
   // AuxKernels
   registerAuxKernel(PorousFlowDarcyVelocityComponent);
-  registerAuxKernel(PorousFlowDarcyVelocityComponentLowerDimensional);
   registerAuxKernel(PorousFlowPropertyAux);
 
   // Functions
   registerFunction(MovingPlanarFront);
-
-  // ICs
-  registerInitialCondition(PorousFlowFluidStateWaterNCGIC);
-  registerInitialCondition(PorousFlowFluidStateBrineCO2IC);
 }
 
 void
@@ -334,15 +307,4 @@ PorousFlowApp::associateSyntax(Syntax & syntax, ActionFactory & action_factory)
   registerAction(PorousFlowBasicTHM, "add_material");
   registerAction(PorousFlowBasicTHM, "add_aux_variable");
   registerAction(PorousFlowBasicTHM, "add_aux_kernel");
-}
-
-// External entry point for dynamic execute flag registration
-extern "C" void
-PorousFlowApp__registerExecFlags(Factory & factory)
-{
-  PorousFlowApp::registerExecFlags(factory);
-}
-void
-PorousFlowApp::registerExecFlags(Factory & /*factory*/)
-{
 }

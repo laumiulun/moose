@@ -1,19 +1,21 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/*               DO NOT MODIFY THIS HEADER                      */
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*           (c) 2010 Battelle Energy Alliance, LLC             */
+/*                   ALL RIGHTS RESERVED                        */
+/*                                                              */
+/*          Prepared by Battelle Energy Alliance, LLC           */
+/*            Under Contract No. DE-AC07-05ID14517              */
+/*            With the U. S. Department of Energy               */
+/*                                                              */
+/*            See COPYRIGHT for full restrictions               */
+/****************************************************************/
 
 // MOOSE includes
 #include "MooseUtils.h"
 #include "MooseError.h"
 #include "MaterialProperty.h"
-#include "MultiMooseEnum.h"
-#include "InputParameters.h"
-#include "ExecFlagEnum.h"
 
 #include "libmesh/elem.h"
 
@@ -113,13 +115,6 @@ pathContains(const std::string & expression,
     return true;
   else
     return false;
-}
-
-bool
-pathExists(const std::string & path)
-{
-  struct stat buffer;
-  return (stat(path.c_str(), &buffer) == 0);
 }
 
 bool
@@ -470,38 +465,30 @@ indentMessage(const std::string & prefix,
 }
 
 std::list<std::string>
-listDir(const std::string path, bool files_only)
-{
-  std::list<std::string> files;
-
-  tinydir_dir dir;
-  dir.has_next = 0; // Avoid a garbage value in has_next (clang StaticAnalysis)
-  tinydir_open(&dir, path.c_str());
-
-  while (dir.has_next)
-  {
-    tinydir_file file;
-    file.is_dir = 0; // Avoid a garbage value in is_dir (clang StaticAnalysis)
-    tinydir_readfile(&dir, &file);
-
-    if (!files_only || !file.is_dir)
-      files.push_back(path + "/" + file.name);
-
-    tinydir_next(&dir);
-  }
-
-  tinydir_close(&dir);
-
-  return files;
-}
-
-std::list<std::string>
 getFilesInDirs(const std::list<std::string> & directory_list)
 {
   std::list<std::string> files;
 
   for (const auto & dir_name : directory_list)
-    files.splice(files.end(), listDir(dir_name, true));
+  {
+    tinydir_dir dir;
+    dir.has_next = 0; // Avoid a garbage value in has_next (clang StaticAnalysis)
+    tinydir_open(&dir, dir_name.c_str());
+
+    while (dir.has_next)
+    {
+      tinydir_file file;
+      file.is_dir = 0; // Avoid a garbage value in is_dir (clang StaticAnalysis)
+      tinydir_readfile(&dir, &file);
+
+      if (!file.is_dir)
+        files.push_back(dir_name + "/" + file.name);
+
+      tinydir_next(&dir);
+    }
+
+    tinydir_close(&dir);
+  }
 
   return files;
 }
@@ -572,45 +559,6 @@ toUpper(const std::string & name)
   std::string upper(name);
   std::transform(upper.begin(), upper.end(), upper.begin(), ::toupper);
   return upper;
-}
-
-ExecFlagEnum
-getDefaultExecFlagEnum()
-{
-  ExecFlagEnum exec_enum = ExecFlagEnum();
-  exec_enum.addAvailableFlags(EXEC_NONE,
-                              EXEC_INITIAL,
-                              EXEC_LINEAR,
-                              EXEC_NONLINEAR,
-                              EXEC_TIMESTEP_END,
-                              EXEC_TIMESTEP_BEGIN,
-                              EXEC_FINAL,
-                              EXEC_CUSTOM);
-  return exec_enum;
-}
-
-int
-stringToInteger(const std::string & input, bool throw_on_failure)
-{
-  int output;            // return value
-  std::size_t count = 0; // number of characters converted with stoi
-
-  // Attempt to use std::stoi, if it fails throw or produce a mooseError
-  try
-  {
-    output = std::stoi(input, &count);
-    if (input.size() != count)
-      throw std::invalid_argument("");
-  }
-  catch (const std::invalid_argument & e)
-  {
-    std::string msg = "Failed to convert '" + input + "' to an int.";
-    if (throw_on_failure)
-      throw std::invalid_argument(msg);
-    else
-      mooseError(msg);
-  }
-  return output;
 }
 
 } // MooseUtils namespace

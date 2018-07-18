@@ -1,12 +1,16 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
-
+/****************************************************************/
+/*               DO NOT MODIFY THIS HEADER                      */
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*           (c) 2010 Battelle Energy Alliance, LLC             */
+/*                   ALL RIGHTS RESERVED                        */
+/*                                                              */
+/*          Prepared by Battelle Energy Alliance, LLC           */
+/*            Under Contract No. DE-AC07-05ID14517              */
+/*            With the U. S. Department of Energy               */
+/*                                                              */
+/*            See COPYRIGHT for full restrictions               */
+/****************************************************************/
 #ifndef MOOSEUTILS_H
 #define MOOSEUTILS_H
 
@@ -14,7 +18,6 @@
 #include "HashMap.h"
 #include "MaterialProperty.h" // MaterialProperties
 #include "InfixIterator.h"
-#include "MooseEnumItem.h"
 
 // C++ includes
 #include <string>
@@ -24,9 +27,6 @@
 #include <iterator>
 
 // Forward Declarations
-class InputParameters;
-class ExecFlagEnum;
-
 namespace libMesh
 {
 class Elem;
@@ -35,7 +35,6 @@ namespace Parallel
 class Communicator;
 }
 }
-class MultiMooseEnum;
 
 namespace MooseUtils
 {
@@ -316,10 +315,6 @@ indentMessage(const std::string & prefix, std::string & message, const char * co
  */
 std::string & removeColor(std::string & msg);
 
-std::list<std::string> listDir(const std::string path, bool files_only = false);
-
-bool pathExists(const std::string & path);
-
 /**
  * Retrieves the names of all of the files contained within the list of directories passed into the
  * routine.
@@ -451,19 +446,6 @@ numDigits(const T & num)
 {
   return num > 9 ? static_cast<int>(std::log10(static_cast<double>(num))) + 1 : 1;
 }
-
-/**
- * Return the default ExecFlagEnum for MOOSE.
- */
-ExecFlagEnum getDefaultExecFlagEnum();
-
-/**
- * Robust string to integer conversion that fails for cases such at "1foo".
- * @param input The string to convert.
- * @param throw_on_failure Throw an invalid_argument exception instead of mooseError.
- */
-int stringToInteger(const std::string & input, bool throw_on_failure = false);
-
-} // MooseUtils namespace
+}
 
 #endif // MOOSEUTILS_H

@@ -1,12 +1,3 @@
-#* This file is part of the MOOSE framework
-#* https://www.mooseframework.org
-#*
-#* All rights reserved, see COPYRIGHT for full restrictions
-#* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-#*
-#* Licensed under LGPL 2.1, please see LICENSE for details
-#* https://www.gnu.org/licenses/lgpl-2.1.html
-
 from __future__ import print_function
 import os
 import re
@@ -33,7 +24,7 @@ def colorText(string, color, **kwargs):
     colored = kwargs.pop('colored', True)
 
     # ANSI color codes for colored terminal output
-    color_codes = dict(RESET='\033[0m', BOLD='\033[1m',RED='\033[31m', MAGENTA='\033[32m', YELLOW='\033[33m', BLUE='\033[34m', GREEN='\033[35m', CYAN='\033[36m', GREY='\033[90m')
+    color_codes = dict(RESET='\033[0m', BOLD='\033[1m',RED='\033[31m', MAGENTA='\033[32m', YELLOW='\033[33m', BLUE='\033[34m', GREEN='\033[35m', CYAN='\033[36m')
     if code:
         color_codes['GREEN'] = '\033[32m'
         color_codes['CYAN']  = '\033[36m'

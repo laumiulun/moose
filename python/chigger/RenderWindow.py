@@ -1,18 +1,21 @@
 #pylint: disable=missing-docstring
-#* This file is part of the MOOSE framework
-#* https://www.mooseframework.org
-#*
-#* All rights reserved, see COPYRIGHT for full restrictions
-#* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-#*
-#* Licensed under LGPL 2.1, please see LICENSE for details
-#* https://www.gnu.org/licenses/lgpl-2.1.html
-
+#################################################################
+#                   DO NOT MODIFY THIS HEADER                   #
+#  MOOSE - Multiphysics Object Oriented Simulation Environment  #
+#                                                               #
+#            (c) 2010 Battelle Energy Alliance, LLC             #
+#                      ALL RIGHTS RESERVED                      #
+#                                                               #
+#           Prepared by Battelle Energy Alliance, LLC           #
+#             Under Contract No. DE-AC07-05ID14517              #
+#              With the U. S. Department of Energy              #
+#                                                               #
+#              See COPYRIGHT for full restrictions              #
+#################################################################
 import os
 import vtk
 
 import base
-import observers
 import misc
 import mooseutils
 
@@ -39,11 +42,6 @@ class RenderWindow(base.ChiggerObject):
         opt.add('multisamples', None, "Set the number of multi-samples.", vtype=int)
         opt.add('antialiasing', 0, "Number of antialiasing frames to perform "
                                    "(set vtkRenderWindow::SetAAFrames).", vtype=int)
-
-        # Observers
-        opt.add('observers', [], "A list of ChiggerObserver objects, once added they are not " \
-                                 "removed. Hence, changing the observers in this list will not " \
-                                 "remove existing objects.")
 
         # Background settings
         background = misc.ChiggerBackground.getOptions()
@@ -153,10 +151,6 @@ class RenderWindow(base.ChiggerObject):
         """
         Begin the interactive VTK session.
         """
-        if timer:
-            msg = "The timer argument is deprecated, please use the 'observers' setting."
-            mooseutils.mooseWarning(msg)
-
         mooseutils.mooseDebug("{}.start()".format(self.__class__.__name__), color='MAGENTA')
 
         if self.needsUpdate():
@@ -164,6 +158,15 @@ class RenderWindow(base.ChiggerObject):
 
         if self.__vtkinteractor:
             self.__vtkinteractor.Initialize()
+
+            if timer:
+                if not isinstance(timer, base.ChiggerTimer):
+                    n = type(timer).__name__
+                    msg = "The supplied timer of type {} must be a ChiggerTimer object.".format(n)
+                    raise mooseutils.MooseException(msg)
+                self.__vtkinteractor.AddObserver('TimerEvent', timer.callback)
+                self.__vtkinteractor.CreateRepeatingTimer(timer.duration())
+
             self.__vtkinteractor.Start()
 
         if self.getOption('style') == 'test':
@@ -230,17 +233,6 @@ class RenderWindow(base.ChiggerObject):
 
         if (self.__active is None) and len(self._results) > 1:
             self.setActive(self._results[1])
-
-        # Observers
-        if self.__vtkinteractor:
-            for observer in self.getOption('observers'):
-                if not isinstance(observer, observers.ChiggerObserver):
-                    msg = "The supplied observer of type {} must be a {} object."
-                    raise mooseutils.MooseException(msg.format(type(observer),
-                                                               observers.ChiggerObserver))
-
-                elif not observer.isActive() is None:
-                    observer.init(self)
 
         self.__vtkwindow.Render()
 

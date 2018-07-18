@@ -1,11 +1,9 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*          All contents are licensed under LGPL V2.1           */
+/*             See LICENSE for full restrictions                */
+/****************************************************************/
 
 #ifndef HEMFLUIDPROPERTIES_H
 #define HEMFLUIDPROPERTIES_H
@@ -58,13 +56,6 @@ public:
    * @param e Specific internal energy
    */
   virtual Real quality(Real v, Real e) const = 0;
-
-  /**
-   * Quality as a function of saturation temperature and enthalpy
-   * @param Tsat Saturation temperature
-   * @param h Enthalpy
-   */
-  virtual Real quality_Tsat_h(Real Tsat, Real h) const = 0;
 
   /**
    * Sound speed as a function of specific volume and specific internal energy
@@ -130,9 +121,8 @@ public:
    * Density as a function of pressure and temperature
    * @param pressure pressure
    * @param temperature temperature
-   * @param quality quality
    */
-  virtual Real rho(Real pressure, Real temperature, Real quality) const = 0;
+  virtual Real rho(Real pressure, Real temperature) const = 0;
 
   /**
    * Density derivative as a function of pressure and temperature
@@ -178,9 +168,8 @@ public:
    * Enthalpy
    * @param pressure pressure
    * @param temperature temperature
-   * @param quality quality
    */
-  virtual Real h(Real pressure, Real temperature, Real quality) const = 0;
+  virtual Real h(Real pressure, Real temperature) const = 0;
 
   /**
    * Derivative of Enthalpy as a function of temperature and pressure

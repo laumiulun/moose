@@ -99,7 +99,7 @@
   color = false
   [./screen]
     type = Console
-    fit_mode = 40
+    fit_mode = 100
   [../]
 []
 

@@ -1,12 +1,3 @@
-#* This file is part of the MOOSE framework
-#* https://www.mooseframework.org
-#*
-#* All rights reserved, see COPYRIGHT for full restrictions
-#* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-#*
-#* Licensed under LGPL 2.1, please see LICENSE for details
-#* https://www.gnu.org/licenses/lgpl-2.1.html
-
 from FileTester import FileTester
 from TestHarness.CSVDiffer import CSVDiffer
 
@@ -34,12 +25,11 @@ class CSVDiff(FileTester):
 
         # Don't Run CSVDiff on Scaled Tests
         if options.scaling and specs['scale_refine']:
-            self.addCaveats('SCALING=True')
-            self.setStatus(self.bucket_skip.status, self.bucket_skip)
+            self.setStatus("don't run CSVDiff on Scaled Tests", self.bucket_skip)
             return output
 
         if len(specs['csvdiff']) > 0:
-            differ = CSVDiffer(specs['test_dir'], specs['csvdiff'], specs['abs_zero'], specs['rel_err'], specs['gold_dir'])
+            differ = CSVDiffer(specs['test_dir'], specs['csvdiff'], specs['abs_zero'], specs['rel_err'])
             msg = differ.diff()
             output += 'Running CSVDiffer.py\n' + msg
             if msg != '':

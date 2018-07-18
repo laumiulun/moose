@@ -1,11 +1,16 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/*               DO NOT MODIFY THIS HEADER                      */
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*           (c) 2010 Battelle Energy Alliance, LLC             */
+/*                   ALL RIGHTS RESERVED                        */
+/*                                                              */
+/*          Prepared by Battelle Energy Alliance, LLC           */
+/*            Under Contract No. DE-AC07-05ID14517              */
+/*            With the U. S. Department of Energy               */
+/*                                                              */
+/*            See COPYRIGHT for full restrictions               */
+/****************************************************************/
 
 #include "UpdateDisplacedMeshThread.h"
 
@@ -99,7 +104,7 @@ UpdateDisplacedMeshThread::init()
     Threads::parallel_reduce(node_range, nl_send_list);
     nl_send_list.unique();
     _nl_ghosted_soln->init(
-        _nl_soln.size(), _nl_soln.local_size(), nl_send_list.send_list(), true, GHOSTED);
+        _nl_soln.size(), _nl_soln.local_size(), nl_send_list.send_list(), GHOSTED);
     _nl_soln.localize(*_nl_ghosted_soln, nl_send_list.send_list());
   }
 
@@ -109,7 +114,7 @@ UpdateDisplacedMeshThread::init()
     Threads::parallel_reduce(node_range, aux_send_list);
     aux_send_list.unique();
     _aux_ghosted_soln->init(
-        _aux_soln.size(), _aux_soln.local_size(), aux_send_list.send_list(), true, GHOSTED);
+        _aux_soln.size(), _aux_soln.local_size(), aux_send_list.send_list(), GHOSTED);
     _aux_soln.localize(*_aux_ghosted_soln, aux_send_list.send_list());
   }
 }

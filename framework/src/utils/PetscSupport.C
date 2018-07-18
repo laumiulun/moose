@@ -1,11 +1,16 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/*               DO NOT MODIFY THIS HEADER                      */
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*           (c) 2010 Battelle Energy Alliance, LLC             */
+/*                   ALL RIGHTS RESERVED                        */
+/*                                                              */
+/*          Prepared by Battelle Energy Alliance, LLC           */
+/*            Under Contract No. DE-AC07-05ID14517              */
+/*            With the U. S. Department of Energy               */
+/*                                                              */
+/*            See COPYRIGHT for full restrictions               */
+/****************************************************************/
 
 #include "PetscSupport.h"
 
@@ -125,7 +130,12 @@ setSolverOptions(SolverParams & solver_params)
   switch (solver_params._type)
   {
     case Moose::ST_PJFNK:
+      setSinglePetscOption("-snes_mf_operator");
+      setSinglePetscOption("-mat_mffd_type", stringify(solver_params._mffd_type));
+      break;
+
     case Moose::ST_JFNK:
+      setSinglePetscOption("-snes_mf");
       setSinglePetscOption("-mat_mffd_type", stringify(solver_params._mffd_type));
       break;
 
@@ -394,14 +404,6 @@ petscNonlinearConverged(SNES snes,
   ierr = SNESGetNumberFunctionEvals(snes, &nfuncs);
   CHKERRABORT(problem.comm().get(), ierr);
 
-  // Whether or not to force SNESSolve() take at least one iteration regardless of the initial
-  // residual norm
-  PetscBool force_iteration = PETSC_FALSE;
-#if !PETSC_RELEASE_LESS_THAN(3, 8, 4)
-  ierr = SNESGetForceIteration(snes, &force_iteration);
-  CHKERRABORT(problem.comm().get(), ierr);
-#endif
-
 // See if SNESSetFunctionDomainError() has been called.  Note:
 // SNESSetFunctionDomainError() and SNESGetFunctionDomainError()
 // were added in different releases of PETSc.
@@ -422,20 +424,19 @@ petscNonlinearConverged(SNES snes,
   // xnorm: 2-norm of current iterate
   // snorm: 2-norm of current step
   // fnorm: 2-norm of function at current iterate
-  MooseNonlinearConvergenceReason moose_reason =
-      problem.checkNonlinearConvergence(msg,
-                                        it,
-                                        xnorm,
-                                        snorm,
-                                        fnorm,
-                                        rtol,
-                                        stol,
-                                        atol,
-                                        nfuncs,
-                                        maxf,
-                                        force_iteration,
-                                        system._initial_residual_before_preset_bcs,
-                                        std::numeric_limits<Real>::max());
+  MooseNonlinearConvergenceReason moose_reason = problem.checkNonlinearConvergence(
+      msg,
+      it,
+      xnorm,
+      snorm,
+      fnorm,
+      rtol,
+      stol,
+      atol,
+      nfuncs,
+      maxf,
+      system._initial_residual_before_preset_bcs,
+      /*div_threshold=*/(1.0 / rtol) * system._initial_residual_before_preset_bcs);
 
   if (msg.length() > 0)
     PetscInfo(snes, msg.c_str());

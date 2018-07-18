@@ -1,13 +1,4 @@
 #!/usr/bin/env python
-#* This file is part of the MOOSE framework
-#* https://www.mooseframework.org
-#*
-#* All rights reserved, see COPYRIGHT for full restrictions
-#* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-#*
-#* Licensed under LGPL 2.1, please see LICENSE for details
-#* https://www.gnu.org/licenses/lgpl-2.1.html
-
 from Input import OutputNames
 from PythonConsoleWidget import PythonConsoleWidget
 from ExodusViewer.ExodusViewer import ExodusViewer
@@ -99,10 +90,8 @@ class PeacockMainWindow(BasePeacockMainWindow):
             input_filename: Name of the new input_filename
         """
         self.input_file_path = input_filename
-        full_filename = os.path.abspath(input_filename)
-        new_dir = os.path.dirname(full_filename)
+        new_dir = os.path.dirname(os.path.abspath(input_filename))
         self.tab_plugin.ExecuteTabPlugin.ExecuteOptionsPlugin.setWorkingDir(new_dir)
-        self.tab_plugin.ExecuteTabPlugin.ExecuteRunnerPlugin.setInputFile(full_filename)
         self._setTitle()
 
     def setTab(self, tabName):

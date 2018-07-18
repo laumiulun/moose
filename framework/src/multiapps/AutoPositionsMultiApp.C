@@ -1,11 +1,16 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/*               DO NOT MODIFY THIS HEADER                      */
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*           (c) 2010 Battelle Energy Alliance, LLC             */
+/*                   ALL RIGHTS RESERVED                        */
+/*                                                              */
+/*          Prepared by Battelle Energy Alliance, LLC           */
+/*            Under Contract No. DE-AC07-05ID14517              */
+/*            With the U. S. Department of Energy               */
+/*                                                              */
+/*            See COPYRIGHT for full restrictions               */
+/****************************************************************/
 
 // MOOSE includes
 #include "AutoPositionsMultiApp.h"
@@ -23,24 +28,12 @@ validParams<AutoPositionsMultiApp>()
   params.suppressParameter<std::vector<Point>>("positions");
   params.suppressParameter<std::vector<FileName>>("positions_file");
 
-  // Turn off the base class position parameter
-  params.set<bool>("use_positions") = false;
-
   return params;
 }
 
 AutoPositionsMultiApp::AutoPositionsMultiApp(const InputParameters & parameters)
   : TransientMultiApp(parameters), BoundaryRestrictable(this, true) // true for applying to nodesets
 {
-  fillPositions();
-}
-
-void
-AutoPositionsMultiApp::initialSetup()
-{
-  init(_positions.size());
-
-  MultiApp::initialSetup();
 }
 
 void

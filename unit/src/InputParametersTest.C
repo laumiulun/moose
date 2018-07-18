@@ -1,15 +1,19 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/*               DO NOT MODIFY THIS HEADER                      */
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*           (c) 2010 Battelle Energy Alliance, LLC             */
+/*                   ALL RIGHTS RESERVED                        */
+/*                                                              */
+/*          Prepared by Battelle Energy Alliance, LLC           */
+/*            Under Contract No. DE-AC07-05ID14517              */
+/*            With the U. S. Department of Energy               */
+/*                                                              */
+/*            See COPYRIGHT for full restrictions               */
+/****************************************************************/
 
 // MOOSE includes
 #include "InputParameters.h"
-#include "MultiMooseEnum.h"
 #include "gtest/gtest.h"
 
 TEST(InputParameters, checkControlParamPrivateError)
@@ -25,7 +29,7 @@ TEST(InputParameters, checkControlParamPrivateError)
   catch (const std::exception & e)
   {
     std::string msg(e.what());
-    ASSERT_TRUE(msg.find("private parameter '' marked controllable") != std::string::npos)
+    ASSERT_TRUE(msg.find("is a private param") != std::string::npos)
         << "failed with unexpected error: " << msg;
   }
 }
@@ -63,7 +67,7 @@ TEST(InputParameters, checkControlParamTypeError)
   catch (const std::exception & e)
   {
     std::string msg(e.what());
-    ASSERT_TRUE(msg.find("non-controllable type") != std::string::npos)
+    ASSERT_TRUE(msg.find("cannot be marked as controllable because its type") != std::string::npos)
         << "failed with unexpected error:" << msg;
   }
 }
@@ -80,7 +84,7 @@ TEST(InputParameters, checkControlParamValidError)
   catch (const std::exception & e)
   {
     std::string msg(e.what());
-    ASSERT_TRUE(msg.find("invalid parameter '' marked controllable") != std::string::npos)
+    ASSERT_TRUE(msg.find("The parameter 'not_valid'") != std::string::npos)
         << "failed with unexpected error: " << msg;
   }
 }
@@ -152,56 +156,4 @@ TEST(InputParameters, checkParamName)
   testBadParamName("p 0");
   testBadParamName("p-0");
   testBadParamName("p!0");
-}
-
-TEST(InputParameters, applyParameter)
-{
-  InputParameters p1 = emptyInputParameters();
-  p1.addParam<MultiMooseEnum>("enum", MultiMooseEnum("foo=0 bar=1", "foo"), "testing");
-  EXPECT_TRUE(p1.get<MultiMooseEnum>("enum").contains("foo"));
-
-  InputParameters p2 = emptyInputParameters();
-  p2.addParam<MultiMooseEnum>("enum", MultiMooseEnum("foo=42 bar=43", "foo"), "testing");
-  EXPECT_TRUE(p2.get<MultiMooseEnum>("enum").contains("foo"));
-
-  p2.set<MultiMooseEnum>("enum") = "bar";
-  p1.applyParameter(p2, "enum");
-  EXPECT_TRUE(p1.get<MultiMooseEnum>("enum").contains("bar"));
-}
-
-TEST(InputParameters, applyParameters)
-{
-  // First enum
-  InputParameters p1 = emptyInputParameters();
-  p1.addParam<MultiMooseEnum>("enum", MultiMooseEnum("foo=0 bar=1", "foo"), "testing");
-  EXPECT_TRUE(p1.get<MultiMooseEnum>("enum").contains("foo"));
-  EXPECT_FALSE(p1.get<MultiMooseEnum>("enum").contains("bar"));
-
-  // Second enum
-  InputParameters p2 = emptyInputParameters();
-  p2.addParam<MultiMooseEnum>("enum", MultiMooseEnum("foo=42 bar=43", "foo"), "testing");
-  EXPECT_TRUE(p2.get<MultiMooseEnum>("enum").contains("foo"));
-  EXPECT_FALSE(p2.get<MultiMooseEnum>("enum").contains("bar"));
-
-  // Change second and apply to first
-  p2.set<MultiMooseEnum>("enum") = "bar";
-  p1.applyParameters(p2);
-  EXPECT_TRUE(p1.get<MultiMooseEnum>("enum").contains("bar"));
-  EXPECT_FALSE(p1.get<MultiMooseEnum>("enum").contains("foo"));
-
-  // Change back first (in "quiet_mode") then reapply second, first should change again
-  p1.set<MultiMooseEnum>("enum", true) = "foo";
-  EXPECT_FALSE(p1.get<MultiMooseEnum>("enum").contains("bar"));
-  EXPECT_TRUE(p1.get<MultiMooseEnum>("enum").contains("foo"));
-  p1.applyParameters(p2);
-  EXPECT_TRUE(p1.get<MultiMooseEnum>("enum").contains("bar"));
-  EXPECT_FALSE(p1.get<MultiMooseEnum>("enum").contains("foo"));
-
-  // Change back first then reapply second, first should not change
-  p1.set<MultiMooseEnum>("enum") = "foo";
-  EXPECT_FALSE(p1.get<MultiMooseEnum>("enum").contains("bar"));
-  EXPECT_TRUE(p1.get<MultiMooseEnum>("enum").contains("foo"));
-  p1.applyParameters(p2);
-  EXPECT_FALSE(p1.get<MultiMooseEnum>("enum").contains("bar"));
-  EXPECT_TRUE(p1.get<MultiMooseEnum>("enum").contains("foo"));
 }

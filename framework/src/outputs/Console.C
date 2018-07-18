@@ -1,11 +1,16 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/*               DO NOT MODIFY THIS HEADER                      */
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*           (c) 2010 Battelle Energy Alliance, LLC             */
+/*                   ALL RIGHTS RESERVED                        */
+/*                                                              */
+/*          Prepared by Battelle Energy Alliance, LLC           */
+/*            Under Contract No. DE-AC07-05ID14517              */
+/*            With the U. S. Department of Energy               */
+/*                                                              */
+/*            See COPYRIGHT for full restrictions               */
+/****************************************************************/
 
 // MOOSE includes
 #include "Console.h"
@@ -101,12 +106,12 @@ validParams<Console>()
                                      "the average residual it is colored yellow.");
 
   // System information controls
-  MultiMooseEnum info("framework mesh aux nonlinear relationship execution output",
-                      "framework mesh aux nonlinear relationship execution");
+  MultiMooseEnum info("framework mesh aux nonlinear execution output",
+                      "framework mesh aux nonlinear execution");
   params.addParam<MultiMooseEnum>("system_info",
                                   info,
                                   "List of information types to display "
-                                  "('framework', 'mesh', 'aux', 'nonlinear', 'relationship', "
+                                  "('framework', 'mesh', 'aux', 'nonlinear', "
                                   "'execution', 'output')");
 
   // Advanced group
@@ -127,20 +132,19 @@ validParams<Console>()
    * of user-modified parameters
    */
   // By default set System Information to output on initial
-  params.set<ExecFlagEnum>("execute_system_information_on", /*quite_mode=*/true) = EXEC_INITIAL;
+  params.set<MultiMooseEnum>("execute_system_information_on", /*quiet_mode=*/true) = "initial";
 
   // Change the default behavior of 'execute_on' to included nonlinear iterations and failed
   // timesteps
-  params.set<ExecFlagEnum>("execute_on", /*quiet_mode=*/true) = {
-      EXEC_INITIAL, EXEC_TIMESTEP_BEGIN, EXEC_LINEAR, EXEC_NONLINEAR, EXEC_FAILED};
+  params.set<MultiMooseEnum>("execute_on", /*quiet_mode=*/true)
+      .push_back("initial timestep_begin linear nonlinear failed");
 
   // By default postprocessors and scalar are only output at the end of a timestep
-  params.set<ExecFlagEnum>("execute_postprocessors_on", /*quiet_mode=*/true) = {EXEC_INITIAL,
-                                                                                EXEC_TIMESTEP_END};
-  params.set<ExecFlagEnum>("execute_vector_postprocessors_on",
-                           /*quiet_mode=*/true) = {EXEC_INITIAL, EXEC_TIMESTEP_END};
-  params.set<ExecFlagEnum>("execute_scalars_on", /*quiet_mode=*/true) = {EXEC_INITIAL,
-                                                                         EXEC_TIMESTEP_END};
+  params.set<MultiMooseEnum>("execute_postprocessors_on", /*quiet_mode=*/true) =
+      "initial timestep_end";
+  params.set<MultiMooseEnum>("execute_vector_postprocessors_on", /*quiet_mode=*/true) =
+      "initial timestep_end";
+  params.set<MultiMooseEnum>("execute_scalars_on", /*quiet_mode=*/true) = "initial timestep_end";
 
   return params;
 }
@@ -200,7 +204,7 @@ Console::Console(const InputParameters & parameters)
 
   // Append the common 'execute_on' to the setting for this object
   // This is unique to the Console object, all other objects inherit from the common options
-  const ExecFlagEnum & common_execute_on = common_action->getParam<ExecFlagEnum>("execute_on");
+  const MultiMooseEnum & common_execute_on = common_action->getParam<MultiMooseEnum>("execute_on");
   for (auto & mme : common_execute_on)
     _execute_on.push_back(mme);
 
@@ -608,13 +612,6 @@ Console::outputSystemInformation()
     std::string output = ConsoleUtils::outputAuxiliarySystemInformation(*_problem_ptr);
     if (!output.empty())
       _console << "Auxiliary System:\n" << output;
-  }
-
-  if (_system_info_flags.contains("relationship"))
-  {
-    std::string output = ConsoleUtils::outputRelationshipManagerInformation(_app);
-    if (!output.empty())
-      _console << "Relationship Managers:\n" << output;
   }
 
   if (_system_info_flags.contains("execution"))

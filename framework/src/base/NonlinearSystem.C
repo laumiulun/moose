@@ -1,20 +1,22 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/*               DO NOT MODIFY THIS HEADER                      */
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*           (c) 2010 Battelle Energy Alliance, LLC             */
+/*                   ALL RIGHTS RESERVED                        */
+/*                                                              */
+/*          Prepared by Battelle Energy Alliance, LLC           */
+/*            Under Contract No. DE-AC07-05ID14517              */
+/*            With the U. S. Department of Energy               */
+/*                                                              */
+/*            See COPYRIGHT for full restrictions               */
+/****************************************************************/
 
 // moose includes
 #include "NonlinearSystem.h"
 #include "FEProblem.h"
 #include "TimeIntegrator.h"
 #include "FiniteDifferencePreconditioner.h"
-#include "PetscSupport.h"
-#include "ComputeResidualFunctor.h"
-#include "ComputeFDResidualFunctor.h"
 
 #include "libmesh/nonlinear_solver.h"
 #include "libmesh/petsc_nonlinear_solver.h"
@@ -31,6 +33,16 @@ compute_jacobian(const NumericVector<Number> & soln,
   FEProblemBase * p =
       sys.get_equation_systems().parameters.get<FEProblemBase *>("_fe_problem_base");
   p->computeJacobian(sys, soln, jacobian);
+}
+
+void
+compute_residual(const NumericVector<Number> & soln,
+                 NumericVector<Number> & residual,
+                 NonlinearImplicitSystem & sys)
+{
+  FEProblemBase * p =
+      sys.get_equation_systems().parameters.get<FEProblemBase *>("_fe_problem_base");
+  p->computeResidual(sys, soln, residual);
 }
 
 void
@@ -87,11 +99,9 @@ NonlinearSystem::NonlinearSystem(FEProblemBase & fe_problem, const std::string &
   : NonlinearSystemBase(
         fe_problem, fe_problem.es().add_system<TransientNonlinearImplicitSystem>(name), name),
     _transient_sys(fe_problem.es().get_system<TransientNonlinearImplicitSystem>(name)),
-    _nl_residual_functor(_fe_problem),
-    _fd_residual_functor(_fe_problem),
     _use_coloring_finite_difference(false)
 {
-  nonlinearSolver()->residual_object = &_nl_residual_functor;
+  nonlinearSolver()->residual = Moose::compute_residual;
   nonlinearSolver()->jacobian = Moose::compute_jacobian;
   nonlinearSolver()->bounds = Moose::compute_bounds;
   nonlinearSolver()->nullspace = Moose::compute_nullspace;
@@ -144,25 +154,7 @@ NonlinearSystem::solve()
   setInitialSolution();
 
   if (_use_finite_differenced_preconditioner)
-  {
-    _transient_sys.nonlinear_solver->fd_residual_object = &_fd_residual_functor;
     setupFiniteDifferencedPreconditioner();
-  }
-
-#ifdef LIBMESH_HAVE_PETSC
-  PetscNonlinearSolver<Real> & solver =
-      static_cast<PetscNonlinearSolver<Real> &>(*_transient_sys.nonlinear_solver);
-  Moose::SolveType moose_solve_type = _fe_problem.solverParams()._type;
-  if (moose_solve_type == Moose::ST_PJFNK || moose_solve_type == Moose::ST_JFNK)
-  {
-    if (moose_solve_type == Moose::ST_PJFNK)
-      solver.solve_type() = PetscNonlinearSolver<Real>::MF_OPERATOR;
-    else
-      solver.solve_type() = PetscNonlinearSolver<Real>::MF;
-
-    solver.mffd_residual_object = &_fd_residual_functor;
-  }
-#endif
 
   if (_time_integrator)
   {
@@ -177,7 +169,11 @@ NonlinearSystem::solve()
   _final_residual = _transient_sys.final_nonlinear_residual();
 
 #ifdef LIBMESH_HAVE_PETSC
-  _n_linear_iters = solver.get_total_linear_iterations();
+  _n_linear_iters = static_cast<PetscNonlinearSolver<Real> &>(*_transient_sys.nonlinear_solver)
+                        .get_total_linear_iterations();
+#endif
+
+#ifdef LIBMESH_HAVE_PETSC
   if (_use_coloring_finite_difference)
 #if PETSC_VERSION_LESS_THAN(3, 2, 0)
     MatFDColoringDestroy(_fdcoloring);
@@ -319,7 +315,7 @@ NonlinearSystem::setupColoringFiniteDifferencedPreconditioner()
   MatFDColoringCreate(petsc_mat->mat(), iscoloring, &_fdcoloring);
   MatFDColoringSetFromOptions(_fdcoloring);
   MatFDColoringSetFunction(_fdcoloring,
-                           (PetscErrorCode(*)(void)) & libMesh::__libmesh_petsc_snes_fd_residual,
+                           (PetscErrorCode(*)(void)) & libMesh::__libmesh_petsc_snes_residual,
                            &petsc_nonlinear_solver);
 #if !PETSC_RELEASE_LESS_THAN(3, 5, 0)
   MatFDColoringSetUp(petsc_mat->mat(), iscoloring, _fdcoloring);

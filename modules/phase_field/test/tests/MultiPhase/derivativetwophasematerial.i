@@ -161,7 +161,7 @@
   nl_rel_tol = 1.0e-11
 
   start_time = 0.0
-  num_steps = 10
+  num_steps = 1
   dt = 0.1
 []
 

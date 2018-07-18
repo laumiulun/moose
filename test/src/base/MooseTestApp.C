@@ -1,14 +1,17 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
-
+/****************************************************************/
+/*               DO NOT MODIFY THIS HEADER                      */
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*           (c) 2010 Battelle Energy Alliance, LLC             */
+/*                   ALL RIGHTS RESERVED                        */
+/*                                                              */
+/*          Prepared by Battelle Energy Alliance, LLC           */
+/*            Under Contract No. DE-AC07-05ID14517              */
+/*            With the U. S. Department of Energy               */
+/*                                                              */
+/*            See COPYRIGHT for full restrictions               */
+/****************************************************************/
 #include "MooseTestApp.h"
-#include "MooseTestAppTypes.h"
 #include "Moose.h"
 #include "Factory.h"
 #include "MooseSyntax.h"
@@ -128,9 +131,6 @@
 
 // dg kernels
 #include "DGCoupledDiffusion.h"
-
-// Nodal Kernels
-#include "JacobianCheck.h"
 
 // ICs
 #include "TEIC.h"
@@ -263,7 +263,6 @@
 #include "TestSteady.h"
 #include "SteadyWithNull.h"
 #include "AdaptAndModify.h"
-#include "PPBindingSteady.h"
 
 // problems
 #include "MooseTestProblem.h"
@@ -277,7 +276,6 @@
 #include "AddLotsOfDiffusion.h"
 #include "TestGetActionsAction.h"
 #include "BadAddKernelAction.h"
-#include "MetaNodalNormalsAction.h"
 
 // TimeSteppers
 #include "TimeSequenceStepperFailTest.h"
@@ -314,14 +312,12 @@ MooseTestApp::MooseTestApp(const InputParameters & parameters) : MooseApp(parame
 {
   bool use_test_objs = !getParam<bool>("disallow_test_objects");
   Moose::registerObjects(_factory);
-  Moose::associateSyntax(_syntax, _action_factory);
-  Moose::registerExecFlags(_factory);
   if (use_test_objs)
-  {
     MooseTestApp::registerObjects(_factory);
+
+  Moose::associateSyntax(_syntax, _action_factory);
+  if (use_test_objs)
     MooseTestApp::associateSyntax(_syntax, _action_factory);
-    MooseTestApp::registerExecFlags(_factory);
-  }
 }
 
 MooseTestApp::~MooseTestApp() {}
@@ -471,9 +467,6 @@ MooseTestApp::registerObjects(Factory & factory)
   // dg kernels
   registerDGKernel(DGCoupledDiffusion);
 
-  // Nodal Kernels
-  registerNodalKernel(JacobianCheck);
-
   // Initial conditions
   registerInitialCondition(TEIC);
   registerInitialCondition(MTICSum);
@@ -602,7 +595,6 @@ MooseTestApp::registerObjects(Factory & factory)
   registerExecutioner(TestSteady);
   registerExecutioner(AdaptAndModify);
   registerExecutioner(SteadyWithNull);
-  registerExecutioner(PPBindingSteady);
 
   registerProblem(MooseTestProblem);
   registerProblem(FailingProblem);
@@ -654,19 +646,4 @@ MooseTestApp::associateSyntax(Syntax & syntax, ActionFactory & action_factory)
   registerAction(AddMatAndKernel, "add_material");
   registerAction(AddMatAndKernel, "add_variable");
   registerSyntax("AddMatAndKernel", "AddMatAndKernel");
-
-  registerAction(MetaNodalNormalsAction, "meta_action");
-  registerSyntax("MetaNodalNormalsAction", "MetaNodalNormals");
-}
-
-// External entry point for dynamic execute flag registration
-extern "C" void
-MooseTestApp__registerExecFlags(Factory & factory)
-{
-  MooseTestApp::registerExecFlags(factory);
-}
-void
-MooseTestApp::registerExecFlags(Factory & factory)
-{
-  registerExecFlag(EXEC_JUST_GO);
 }

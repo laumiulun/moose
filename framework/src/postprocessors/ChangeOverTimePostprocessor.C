@@ -1,11 +1,16 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/*               DO NOT MODIFY THIS HEADER                      */
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*           (c) 2010 Battelle Energy Alliance, LLC             */
+/*                   ALL RIGHTS RESERVED                        */
+/*                                                              */
+/*          Prepared by Battelle Energy Alliance, LLC           */
+/*            Under Contract No. DE-AC07-05ID14517              */
+/*            With the U. S. Department of Energy               */
+/*                                                              */
+/*            See COPYRIGHT for full restrictions               */
+/****************************************************************/
 
 #include "ChangeOverTimePostprocessor.h"
 
@@ -42,13 +47,16 @@ ChangeOverTimePostprocessor::ChangeOverTimePostprocessor(const InputParameters &
     // ensure dependent post-processor is executed on initial
     const PostprocessorName & pp_name = getParam<PostprocessorName>("postprocessor");
     const UserObject & pp = _fe_problem.getUserObject<UserObject>(pp_name);
-    if (!pp.getExecuteOnEnum().contains(EXEC_INITIAL))
+    const std::vector<ExecFlagType> & pp_exec_flags = pp.execFlags();
+    if (std::find(pp_exec_flags.begin(), pp_exec_flags.end(), ExecFlagType::EXEC_INITIAL) ==
+        pp_exec_flags.end())
       mooseError("When 'change_with_respect_to_initial' is specified to be true, 'execute_on' for "
                  "the dependent post-processor ('" +
                  pp_name + "') must include 'initial'");
 
     // ensure THIS post-processor is executed on initial
-    if (!_execute_enum.contains(EXEC_INITIAL))
+    if (std::find(_exec_flags.begin(), _exec_flags.end(), ExecFlagType::EXEC_INITIAL) ==
+        _exec_flags.end())
       mooseError("When 'change_with_respect_to_initial' is specified to be true, 'execute_on' for "
                  "the ChangeOverTimePostprocessor ('" +
                  name() + "') must include 'initial'");

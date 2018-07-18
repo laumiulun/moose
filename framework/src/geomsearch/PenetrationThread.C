@@ -1,11 +1,16 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/*               DO NOT MODIFY THIS HEADER                      */
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*           (c) 2010 Battelle Energy Alliance, LLC             */
+/*                   ALL RIGHTS RESERVED                        */
+/*                                                              */
+/*          Prepared by Battelle Energy Alliance, LLC           */
+/*            Under Contract No. DE-AC07-05ID14517              */
+/*            With the U. S. Department of Energy               */
+/*                                                              */
+/*            See COPYRIGHT for full restrictions               */
+/****************************************************************/
 
 // Moose
 #include "PenetrationThread.h"
@@ -437,13 +442,6 @@ PenetrationThread::operator()(const NodeIdRange & range)
 
     if (!info_set)
     {
-      // If penetration is not detected within the saved patch, it is possible
-      // that the slave node has moved outside the saved patch. So, the patch
-      // for the slave nodes saved in _recheck_slave_nodes has to be updated
-      // and the penetration detection has to be re-run on the updated patch.
-
-      _recheck_slave_nodes.push_back(node_id);
-
       delete info;
       info = NULL;
     }
@@ -466,11 +464,8 @@ PenetrationThread::operator()(const NodeIdRange & range)
 }
 
 void
-PenetrationThread::join(const PenetrationThread & other)
+PenetrationThread::join(const PenetrationThread & /*other*/)
 {
-  _recheck_slave_nodes.insert(_recheck_slave_nodes.end(),
-                              other._recheck_slave_nodes.begin(),
-                              other._recheck_slave_nodes.end());
 }
 
 void

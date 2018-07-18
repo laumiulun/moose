@@ -1,11 +1,16 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/*               DO NOT MODIFY THIS HEADER                      */
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*           (c) 2010 Battelle Energy Alliance, LLC             */
+/*                   ALL RIGHTS RESERVED                        */
+/*                                                              */
+/*          Prepared by Battelle Energy Alliance, LLC           */
+/*            Under Contract No. DE-AC07-05ID14517              */
+/*            With the U. S. Department of Energy               */
+/*                                                              */
+/*            See COPYRIGHT for full restrictions               */
+/****************************************************************/
 
 #include "Exodus.h"
 
@@ -35,18 +40,10 @@ validParams<Exodus>()
                         "when 'use_displace = true', otherwise defaults to false");
 
   // Select problem dimension for mesh output
-  params.addDeprecatedParam<bool>("use_problem_dimension",
-                                  "Use the problem dimension to the mesh output. "
-                                  "Set to false when outputting lower dimensional "
-                                  "meshes embedded in a higher dimensional space.",
-                                  "Use 'output_dimension = problem_dimension' instead.");
-
-  MooseEnum output_dimension("default 1 2 3 problem_dimension", "default");
-
-  params.addParam<MooseEnum>(
-      "output_dimension", output_dimension, "The dimension of the output file");
-
-  params.addParamNamesToGroup("output_dimension", "Advanced");
+  params.addParam<bool>("use_problem_dimension",
+                        "Use the problem dimension to the mesh output. "
+                        "Set to false when outputting lower dimensional "
+                        "meshes embedded in a higher dimensional space.");
 
   // Set the default padding to 3
   params.set<unsigned int>("padding") = 3;
@@ -61,7 +58,7 @@ validParams<Exodus>()
                         "existing file, so only a single timestep exists.");
 
   // Set outputting of the input to be on by default
-  params.set<ExecFlagEnum>("execute_input_on") = EXEC_INITIAL;
+  params.set<MultiMooseEnum>("execute_input_on") = "initial";
 
   // Return the InputParameters
   return params;
@@ -75,28 +72,8 @@ Exodus::Exodus(const InputParameters & parameters)
     _exodus_mesh_changed(declareRestartableData<bool>("exodus_mesh_changed", true)),
     _sequence(isParamValid("sequence") ? getParam<bool>("sequence")
                                        : _use_displaced ? true : false),
-    _overwrite(getParam<bool>("overwrite")),
-    _output_dimension(getParam<MooseEnum>("output_dimension"))
+    _overwrite(getParam<bool>("overwrite"))
 {
-  if (isParamValid("use_problem_dimension"))
-  {
-    auto use_problem_dimension = getParam<bool>("use_problem_dimension");
-
-    if (use_problem_dimension)
-      _output_dimension = "problem_dimension";
-    else
-      _output_dimension = "default";
-  }
-}
-
-void
-Exodus::setOutputDimension(unsigned int dim)
-{
-  if (dim >= 1 && dim <= 3)
-    _output_dimension = dim;
-  else
-    mooseError(
-        name(), ": Invalid dimension (", dim, ") specified.  Allowed dimensions are 1, 2 or 3.");
 }
 
 void
@@ -181,53 +158,40 @@ Exodus::outputSetup()
     _exodus_num = 1;
   }
 
-  switch (_output_dimension)
+  if (isParamValid("use_problem_dimension"))
+    _exodus_io_ptr->use_mesh_dimension_instead_of_spatial_dimension(
+        getParam<bool>("use_problem_dimension"));
+  else
   {
-    case 0: // default
-      // If the spatial_dimension is 1 (this can only happen in recent
-      // versions of libmesh where the meaning of spatial_dimension has
-      // changed), then force the Exodus file to be written with
-      // num_dim==3.
-      //
-      // This works around an issue in Paraview where 1D meshes cannot
-      // not be visualized correctly.  Note: the mesh_dimension() should
-      // get changed back to 1 the next time MeshBase::prepare_for_use()
-      // is called.
-      if (_es_ptr->get_mesh().spatial_dimension() == 1)
-        _exodus_io_ptr->write_as_dimension(3);
+    // If the spatial_dimension is 1 (this can only happen in recent
+    // versions of libmesh where the meaning of spatial_dimension has
+    // changed), then force the Exodus file to be written with
+    // num_dim==3.
+    //
+    // This works around an issue in Paraview where 1D meshes cannot
+    // not be visualized correctly.  Note: the mesh_dimension() should
+    // get changed back to 1 the next time MeshBase::prepare_for_use()
+    // is called.
+    if (_es_ptr->get_mesh().spatial_dimension() == 1)
+      _exodus_io_ptr->write_as_dimension(3);
 
-      // If the spatial_dimension is 2 (again, only possible in recent
-      // versions of libmesh), then we need to be careful as this mesh
-      // would not have been written with num_dim==2 in the past.
-      //
-      // We *can't* simply write it with num_dim==mesh_dimension,
-      // because mesh_dimension might be 1, and as discussed above, we
-      // don't allow num_dim==1 Exodus files.  Therefore, in this
-      // particular case, we force writing with num_dim==3.  Note: the
-      // humor of writing a mesh of 1D elements which lives in 2D space
-      // as num_dim==3 is not lost on me.
-      if (_es_ptr->get_mesh().spatial_dimension() == 2 && _es_ptr->get_mesh().mesh_dimension() == 1)
-        _exodus_io_ptr->write_as_dimension(3);
+    // If the spatial_dimension is 2 (again, only possible in recent
+    // versions of libmesh), then we need to be careful as this mesh
+    // would not have been written with num_dim==2 in the past.
+    //
+    // We *can't* simply write it with num_dim==mesh_dimension,
+    // because mesh_dimension might be 1, and as discussed above, we
+    // don't allow num_dim==1 Exodus files.  Therefore, in this
+    // particular case, we force writing with num_dim==3.  Note: the
+    // humor of writing a mesh of 1D elements which lives in 2D space
+    // as num_dim==3 is not lost on me.
+    if (_es_ptr->get_mesh().spatial_dimension() == 2 && _es_ptr->get_mesh().mesh_dimension() == 1)
+      _exodus_io_ptr->write_as_dimension(3);
 
-      // Utilize the spatial dimension.  This value of this flag is
-      // superseded by the value passed to write_as_dimension(), if any.
-      if (_es_ptr->get_mesh().mesh_dimension() != 1)
-        _exodus_io_ptr->use_mesh_dimension_instead_of_spatial_dimension(true);
-
-      break;
-
-    case 1:
-    case 2:
-    case 3:
-      _exodus_io_ptr->write_as_dimension((int)_output_dimension);
-      break;
-
-    case 4: // problem_dimension
+    // Utilize the spatial dimension.  This value of this flag is
+    // superseded by the value passed to write_as_dimension(), if any.
+    if (_es_ptr->get_mesh().mesh_dimension() != 1)
       _exodus_io_ptr->use_mesh_dimension_instead_of_spatial_dimension(true);
-      break;
-
-    default:
-      mooseError("Unknown output_dimension");
   }
 }
 

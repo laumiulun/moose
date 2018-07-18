@@ -141,7 +141,7 @@
   [./torque]
     type = TorqueReaction
     boundary = right
-    reaction_force_variables = 'saved_x saved_y'
+    react = 'saved_x saved_y'
     direction_vector = '0. 0. 1.'
   [../]
 []

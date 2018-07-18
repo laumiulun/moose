@@ -6,8 +6,6 @@
   xmax = 1000
   ymax = 1000
   elem_type = QUAD4
-
-  parallel_type = replicated # Periodic BCs
 []
 
 [GlobalParams]

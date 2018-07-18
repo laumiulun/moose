@@ -1,31 +1,36 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/*               DO NOT MODIFY THIS HEADER                      */
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*           (c) 2010 Battelle Energy Alliance, LLC             */
+/*                   ALL RIGHTS RESERVED                        */
+/*                                                              */
+/*          Prepared by Battelle Energy Alliance, LLC           */
+/*            Under Contract No. DE-AC07-05ID14517              */
+/*            With the U. S. Department of Energy               */
+/*                                                              */
+/*            See COPYRIGHT for full restrictions               */
+/****************************************************************/
 
 #ifndef FUNCTIONDT_H
 #define FUNCTIONDT_H
 
 #include "TimeStepper.h"
-#include "FunctionInterface.h"
 #include "LinearInterpolation.h"
 
 class FunctionDT;
-class Function;
 
 template <>
 InputParameters validParams<FunctionDT>();
 
-class FunctionDT : public TimeStepper, public FunctionInterface
+class FunctionDT : public TimeStepper
 {
 public:
   FunctionDT(const InputParameters & parameters);
 
   virtual void init() override;
+
+  virtual void preExecute() override;
 
   virtual void postStep() override;
   virtual void rejectStep() override;
@@ -38,12 +43,6 @@ protected:
 
   const std::vector<Real> & _time_t;
   const std::vector<Real> & _time_dt;
-
-  /// true, if we are using `_function`, false if we are using _time_ipol
-  bool _use_function;
-  /// The time-dependent function specifying the time step size (turn this into a reference then
-  /// `time_t` and `time_dt` is removed)
-  Function * _function;
 
   /// Piecewise linear definition of time stepping
   std::unique_ptr<LinearInterpolation> _time_ipol;

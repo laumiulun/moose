@@ -1,11 +1,9 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*          All contents are licensed under LGPL V2.1           */
+/*             See LICENSE for full restrictions                */
+/****************************************************************/
 
 #include "RdgApp.h"
 #include "Moose.h"
@@ -42,9 +40,6 @@ RdgApp::RdgApp(InputParameters parameters) : MooseApp(parameters)
 
   Moose::associateSyntax(_syntax, _action_factory);
   RdgApp::associateSyntax(_syntax, _action_factory);
-
-  Moose::registerExecFlags(_factory);
-  RdgApp::registerExecFlags(_factory);
 }
 
 RdgApp::~RdgApp() {}
@@ -94,16 +89,5 @@ RdgApp__associateSyntax(Syntax & syntax, ActionFactory & action_factory)
 }
 void
 RdgApp::associateSyntax(Syntax & /*syntax*/, ActionFactory & /*action_factory*/)
-{
-}
-
-// External entry point for dynamic execute flag registration
-extern "C" void
-RdgApp__registerExecFlags(Factory & factory)
-{
-  RdgApp::registerExecFlags(factory);
-}
-void
-RdgApp::registerExecFlags(Factory & /*factory*/)
 {
 }

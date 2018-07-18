@@ -1,11 +1,16 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/*               DO NOT MODIFY THIS HEADER                      */
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*           (c) 2010 Battelle Energy Alliance, LLC             */
+/*                   ALL RIGHTS RESERVED                        */
+/*                                                              */
+/*          Prepared by Battelle Energy Alliance, LLC           */
+/*            Under Contract No. DE-AC07-05ID14517              */
+/*            With the U. S. Department of Energy               */
+/*                                                              */
+/*            See COPYRIGHT for full restrictions               */
+/****************************************************************/
 
 // C POSIX includes
 #include <sys/stat.h>
@@ -152,7 +157,31 @@ Checkpoint::updateCheckpointFiles(CheckpointFileNames file_struct)
       std::ostringstream oss;
       oss << delete_files.checkpoint;
       std::string file_name = oss.str();
-      CheckpointIO::cleanup(file_name, comm().size());
+      int ret = remove(file_name.c_str());
+      if (ret != 0)
+        mooseWarning("Error during the deletion of file '", file_name, "': ", std::strerror(ret));
+    }
+
+    if (_parallel_mesh)
+    {
+      std::ostringstream oss;
+      oss << delete_files.checkpoint << '-' << n_processors() << '-' << proc_id;
+      std::string file_name = oss.str();
+      int ret = remove(file_name.c_str());
+      if (ret != 0)
+        mooseWarning("Error during the deletion of file '", file_name, "': ", std::strerror(ret));
+    }
+    else
+    {
+      if (proc_id == 0)
+      {
+        std::ostringstream oss;
+        oss << delete_files.checkpoint << "-1-0";
+        std::string file_name = oss.str();
+        int ret = remove(file_name.c_str());
+        if (ret != 0)
+          mooseWarning("Error during the deletion of file '", file_name, "': ", std::strerror(ret));
+      }
     }
 
     // Delete the system files (xdr and xdr.0000, ...)
@@ -165,7 +194,6 @@ Checkpoint::updateCheckpointFiles(CheckpointFileNames file_struct)
       if (ret != 0)
         mooseWarning("Error during the deletion of file '", file_name, "': ", std::strerror(ret));
     }
-
     {
       std::ostringstream oss;
       oss << delete_files.system << "." << std::setw(4) << std::setprecision(0) << std::setfill('0')

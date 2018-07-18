@@ -17,8 +17,6 @@
   zmin = 0
   zmax = 300
   uniform_refine = 2 # Initial uniform refinement of the mesh
-
-  parallel_type = replicated # Periodic BCs
 []
 
 [GlobalParams]

@@ -12,14 +12,6 @@
   SUPG_UO = SUPGstandard
 []
 
-[Functions]
-  [./dts]
-    type = PiecewiseLinear
-    y = '1000 10000'
-    x = '100 1000'
-  [../]
-[]
-
 [UserObjects]
   [./PPNames]
     type = RichardsVarNames
@@ -177,7 +169,8 @@
   [./TimeStepper]
     # get only marginally better results for smaller time steps
     type = FunctionDT
-    function = dts
+    time_dt = '1000 10000'
+    time_t = '100 1000'
   [../]
 
 []

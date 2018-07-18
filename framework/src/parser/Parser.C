@@ -1,11 +1,16 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/*               DO NOT MODIFY THIS HEADER                      */
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*           (c) 2010 Battelle Energy Alliance, LLC             */
+/*                   ALL RIGHTS RESERVED                        */
+/*                                                              */
+/*          Prepared by Battelle Energy Alliance, LLC           */
+/*            Under Contract No. DE-AC07-05ID14517              */
+/*            With the U. S. Department of Energy               */
+/*                                                              */
+/*            See COPYRIGHT for full restrictions               */
+/****************************************************************/
 
 // MOOSE includes
 #include "MooseUtils.h"
@@ -321,7 +326,10 @@ Parser::walkRaw(std::string /*fullpath*/, std::string /*nodepath*/, hit::Node * 
   std::string registered_identifier = _syntax.isAssociated(section_name, &is_parent);
 
   // We need to retrieve a list of Actions associated with the current identifier
-  auto iters = _syntax.getActions(registered_identifier);
+  std::pair<std::multimap<std::string, Syntax::ActionInfo>::iterator,
+            std::multimap<std::string, Syntax::ActionInfo>::iterator>
+      iters = _syntax.getActions(registered_identifier);
+
   if (iters.first == iters.second)
   {
     _errmsg += errormsg(getFileName(),
@@ -349,8 +357,7 @@ Parser::walkRaw(std::string /*fullpath*/, std::string /*nodepath*/, hit::Node * 
     // Add the parsed syntax to the parameters object for consumption by the Action
     params.set<std::string>("task") = it->second._task;
     params.set<std::string>("registered_identifier") = registered_identifier;
-    params.blockLocation() = _input_filename + ":" + std::to_string(n->line());
-    params.blockFullpath() = n->fullpath();
+    params.addPrivateParam<std::string>("parser_syntax", curr_identifier);
 
     // Create the Action
     std::shared_ptr<Action> action_obj =
@@ -361,8 +368,6 @@ Parser::walkRaw(std::string /*fullpath*/, std::string /*nodepath*/, hit::Node * 
         std::dynamic_pointer_cast<MooseObjectAction>(action_obj);
     if (object_action)
     {
-      object_action->getObjectParams().blockLocation() = params.blockLocation();
-      object_action->getObjectParams().blockFullpath() = params.blockFullpath();
       extractParams(curr_identifier, object_action->getObjectParams());
       object_action->getObjectParams()
           .set<std::vector<std::string>>("control_tags")
@@ -541,14 +546,11 @@ Parser::parse(const std::string & input_filename)
   //                            This is because we retrieve valid parameters from the Factory
   //                            during parse time. Objects must be registered before
   //                            validParameters can be retrieved.
-  auto syntax = _syntax.getSyntaxByAction("SetupDebugAction");
-  std::copy(syntax.begin(), syntax.end(), std::back_inserter(_secs_need_first));
-
-  syntax = _syntax.getSyntaxByAction("GlobalParamsAction");
-  std::copy(syntax.begin(), syntax.end(), std::back_inserter(_secs_need_first));
-
-  syntax = _syntax.getSyntaxByAction("DynamicObjectRegistrationAction");
-  std::copy(syntax.begin(), syntax.end(), std::back_inserter(_secs_need_first));
+  _secs_need_first = {
+      _syntax.getSyntaxByAction("SetupDebugAction", "setup_debug"),
+      _syntax.getSyntaxByAction("GlobalParamsAction", "set_global_params"),
+      _syntax.getSyntaxByAction("DynamicObjectRegistrationAction", "dynamic_object_registration"),
+  };
 
   // walk all the sections extracting paramters from each into InputParameters objects
   for (auto & sec : _secs_need_first)
@@ -881,14 +883,6 @@ void Parser::setScalarParameter<MultiMooseEnum, MultiMooseEnum>(
     GlobalParamsAction * global_block);
 
 template <>
-void Parser::setScalarParameter<ExecFlagEnum, ExecFlagEnum>(
-    const std::string & full_name,
-    const std::string & short_name,
-    InputParameters::Parameter<ExecFlagEnum> * param,
-    bool in_global,
-    GlobalParamsAction * global_block);
-
-template <>
 void Parser::setScalarParameter<RealTensorValue, RealTensorValue>(
     const std::string & full_name,
     const std::string & short_name,
@@ -935,7 +929,7 @@ Parser::extractParams(const std::string & prefix, InputParameters & p)
   std::ostringstream error_stream;
   static const std::string global_params_task = "set_global_params";
   static const std::string global_params_block_name =
-      _syntax.getSyntaxByAction("GlobalParamsAction").front();
+      _syntax.getSyntaxByAction("GlobalParamsAction", global_params_task);
 
   ActionIterator act_iter = _action_wh.actionBlocksWithActionBegin(global_params_task);
   GlobalParamsAction * global_params_block = nullptr;
@@ -963,9 +957,9 @@ Parser::extractParams(const std::string & prefix, InputParameters & p)
       _extracted_vars.insert(
           full_name); // Keep track of all variables extracted from the input file
       found = true;
-      p.inputLocation(it.first) =
+      p.set<std::string>(paramLocName(it.first)) =
           _input_filename + ":" + std::to_string(_root->find(full_name)->line());
-      p.paramFullpath(it.first) = full_name;
+      p.set<std::string>(paramPathName(it.first)) = full_name;
     }
     // Wait! Check the GlobalParams section
     else if (global_params_block)
@@ -978,9 +972,9 @@ Parser::extractParams(const std::string & prefix, InputParameters & p)
             full_name); // Keep track of all variables extracted from the input file
         found = true;
         in_global = true;
-        p.inputLocation(it.first) =
+        p.set<std::string>(paramLocName(it.first)) =
             _input_filename + ":" + std::to_string(_root->find(full_name)->line());
-        p.paramFullpath(it.first) = full_name;
+        p.set<std::string>(paramPathName(it.first)) = full_name;
       }
     }
 
@@ -1114,7 +1108,6 @@ Parser::extractParams(const std::string & prefix, InputParameters & p)
       setscalar(MooseEnum, MooseEnum);
       setscalar(MultiMooseEnum, MultiMooseEnum);
       setscalar(RealTensorValue, RealTensorValue);
-      setscalar(ExecFlagEnum, ExecFlagEnum);
 
       // vector types
       setvector(Real, double);
@@ -1214,7 +1207,7 @@ Parser::extractParams(const std::string & prefix, InputParameters & p)
     mooseError(error_stream.str());
 
   // Here we will see if there are any auto build vectors that need to be created
-  std::map<std::string, std::pair<std::string, std::string>> auto_build_vectors =
+  const std::map<std::string, std::pair<std::string, std::string>> & auto_build_vectors =
       p.getAutoBuildVectors();
   for (const auto & it : auto_build_vectors)
   {
@@ -1331,7 +1324,7 @@ Parser::setFilePathParam(const std::string & full_name,
   if (pos != std::string::npos && postfix[0] != '/' && !postfix.empty())
     prefix = _input_filename.substr(0, pos + 1);
 
-  params.rawParamVal(short_name) = postfix;
+  params.set<std::string>("_raw_" + short_name) = postfix;
   param->set() = prefix + postfix;
 
   if (in_global)
@@ -1399,7 +1392,6 @@ Parser::setVectorFilePathParam(const std::string & full_name,
   if (_root->find(full_name))
   {
     auto tmp = _root->param<std::vector<std::string>>(full_name);
-    params.rawParamVal(short_name) = _root->param<std::string>(full_name);
     for (auto val : tmp)
     {
       std::string prefix;
@@ -1412,6 +1404,7 @@ Parser::setVectorFilePathParam(const std::string & full_name,
     }
   }
 
+  params.set<std::vector<std::string>>("_raw_" + short_name) = rawvec;
   param->set() = vec;
 
   if (in_global)
@@ -1587,31 +1580,6 @@ Parser::setScalarParameter<MultiMooseEnum, MultiMooseEnum>(
   {
     global_block->remove(short_name);
     global_block->setScalarParam<MultiMooseEnum>(short_name) = current_param;
-  }
-}
-
-template <>
-void
-Parser::setScalarParameter<ExecFlagEnum, ExecFlagEnum>(
-    const std::string & full_name,
-    const std::string & short_name,
-    InputParameters::Parameter<ExecFlagEnum> * param,
-    bool in_global,
-    GlobalParamsAction * global_block)
-{
-  ExecFlagEnum current_param = param->get();
-  auto vec = _root->param<std::vector<std::string>>(full_name);
-
-  std::string raw_values;
-  for (unsigned int i = 0; i < vec.size(); ++i)
-    raw_values += ' ' + vec[i];
-
-  param->set() = raw_values;
-
-  if (in_global)
-  {
-    global_block->remove(short_name);
-    global_block->setScalarParam<ExecFlagEnum>(short_name) = current_param;
   }
 }
 

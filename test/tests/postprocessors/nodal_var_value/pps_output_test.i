@@ -118,6 +118,7 @@
 
   [./avg_v]
     type = AverageElementSize
+    variable = v
     outputs = none
   [../]
 []

@@ -7,10 +7,6 @@
     type = PythonUnitTest
     input = test_Diff.py
   [../]
-  [./diff_gold]
-    type = PythonUnitTest
-    input = test_DiffGold.py
-  [../]
   [./cyclic]
     type = PythonUnitTest
     input = test_Cyclic.py
@@ -86,13 +82,5 @@
   [./exra_info]
     type = PythonUnitTest
     input = test_ExtraInfo.py
-  [../]
-  [./parser_errors]
-    type = PythonUnitTest
-    input = test_ParserErrors.py
-  [../]
-  [./duplicate_test_names]
-    type = PythonUnitTest
-    input = test_DuplicateTestNames.py
   [../]
 []

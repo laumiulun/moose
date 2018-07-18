@@ -16,6 +16,5 @@
     input = 'moving.i'
     exodiff = 'moving_out.e'
     valgrind = 'HEAVY'
-    allow_warnings = true
   [../]
 []

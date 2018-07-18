@@ -105,6 +105,7 @@
     block = 0
     eigen_base = '1 1 1 0 0 0'
     args = c
+    incremental_form = true
     prefactor = var_dep
     eigenstrain_name = eigenstrain
   [../]

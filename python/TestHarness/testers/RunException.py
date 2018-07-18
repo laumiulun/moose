@@ -1,12 +1,3 @@
-#* This file is part of the MOOSE framework
-#* https://www.mooseframework.org
-#*
-#* All rights reserved, see COPYRIGHT for full restrictions
-#* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-#*
-#* Licensed under LGPL 2.1, please see LICENSE for details
-#* https://www.gnu.org/licenses/lgpl-2.1.html
-
 from TestHarness import util
 from RunApp import RunApp
 
@@ -32,8 +23,7 @@ class RunException(RunApp):
 
     def checkRunnable(self, options):
         if options.enable_recover:
-            self.addCaveats('RunException RECOVER')
-            self.setStatus(self.bucket_skip.status, self.bucket_skip)
+            self.setStatus('RunException RECOVER', self.bucket_skip)
             return False
         return RunApp.checkRunnable(self, options)
 

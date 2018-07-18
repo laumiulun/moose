@@ -1,11 +1,16 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/*               DO NOT MODIFY THIS HEADER                      */
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*           (c) 2010 Battelle Energy Alliance, LLC             */
+/*                   ALL RIGHTS RESERVED                        */
+/*                                                              */
+/*          Prepared by Battelle Energy Alliance, LLC           */
+/*            Under Contract No. DE-AC07-05ID14517              */
+/*            With the U. S. Department of Energy               */
+/*                                                              */
+/*            See COPYRIGHT for full restrictions               */
+/****************************************************************/
 
 // MOOSE includes
 #include "TopResidualDebugOutput.h"
@@ -31,7 +36,7 @@ validParams<TopResidualDebugOutput>()
       "num_residuals", 0, "The number of top residuals to print out (0 = no output)");
 
   // By default operate on both nonlinear and linear residuals
-  params.set<ExecFlagEnum>("execute_on", true) = {EXEC_LINEAR, EXEC_NONLINEAR, EXEC_TIMESTEP_END};
+  params.set<MultiMooseEnum>("execute_on") = "linear nonlinear timestep_end";
   return params;
 }
 

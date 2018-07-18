@@ -12,14 +12,6 @@
   richardsVarNames_UO = PPNames
 []
 
-[Functions]
-  [./dts]
-    type = PiecewiseLinear
-    y = '0.1 0.5 0.5 1 2  4'
-    x = '0   0.1 1   5 40 42'
-  [../]
-[]
-
 [UserObjects]
   [./PPNames]
     type = RichardsVarNames
@@ -240,7 +232,8 @@
 
   [./TimeStepper]
     type = FunctionDT
-    function = dts
+    time_dt = '0.1 0.5 0.5 1 2  4'
+    time_t =  '0   0.1 1   5 40 42'
   [../]
 []
 

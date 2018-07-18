@@ -1,12 +1,16 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
-
+/****************************************************************/
+/*               DO NOT MODIFY THIS HEADER                      */
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*           (c) 2010 Battelle Energy Alliance, LLC             */
+/*                   ALL RIGHTS RESERVED                        */
+/*                                                              */
+/*          Prepared by Battelle Energy Alliance, LLC           */
+/*            Under Contract No. DE-AC07-05ID14517              */
+/*            With the U. S. Department of Energy               */
+/*                                                              */
+/*            See COPYRIGHT for full restrictions               */
+/****************************************************************/
 #ifndef MULTIAPP_H
 #define MULTIAPP_H
 
@@ -61,11 +65,6 @@ public:
 
   virtual void postExecute();
 
-  /**
-   * Called just after construction to allow derived classes to set _positions;
-   */
-  void setupPositions();
-
   virtual void initialSetup() override;
 
   /**
@@ -97,29 +96,12 @@ public:
   virtual bool solveStep(Real dt, Real target_time, bool auto_advance = true) = 0;
 
   /**
-   * Advances the multi-apps time step which is important for dt selection.
-   * (Note this does not advance the *time*. That is done in Transient::endStep,
-   * which is called either directly from solveStep() for loose coupling cases
-   * or through finishStep() for Picard coupling cases)
+   * Actually advances time and causes output.
+   *
+   * If auto_advance=true was used in solveStep() then this function
+   * will do nothing.
    */
-  virtual void incrementTStep() {}
-
-  /**
-   * Deprecated method. Use finishStep
-   */
-  virtual void advanceStep()
-  {
-    mooseDeprecated("advanceStep() is deprecated; please use finishStep() instead");
-    finishStep();
-  }
-
-  /**
-   * Calls multi-apps executioners' endStep and postStep methods which creates output and advances
-   * time (not the time step; see incrementTStep()) among other things. This method is only called
-   * for Picard calculations because for loosely coupled calculations the executioners' endStep and
-   * postStep methods are called from solveStep().
-   */
-  virtual void finishStep() {}
+  virtual void advanceStep() = 0;
 
   /**
    * Save off the state of every Sub App

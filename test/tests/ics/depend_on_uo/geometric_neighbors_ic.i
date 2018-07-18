@@ -10,6 +10,10 @@
   # We are testing geometric ghosted functors
   # so we have to use distributed mesh
   parallel_type = distributed
+
+  # We are testing these two parameters
+  num_ghosted_layers = 1
+  ghost_point_neighbors = false
 []
 
 [Variables]
@@ -31,7 +35,6 @@
   [./ghost_uo]
     type = GhostUserObject
     execute_on = initial
-    element_side_neighbor_layers = 1
   [../]
 []
 

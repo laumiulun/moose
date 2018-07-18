@@ -1,11 +1,16 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/*               DO NOT MODIFY THIS HEADER                      */
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*           (c) 2010 Battelle Energy Alliance, LLC             */
+/*                   ALL RIGHTS RESERVED                        */
+/*                                                              */
+/*          Prepared by Battelle Energy Alliance, LLC           */
+/*            Under Contract No. DE-AC07-05ID14517              */
+/*            With the U. S. Department of Energy               */
+/*                                                              */
+/*            See COPYRIGHT for full restrictions               */
+/****************************************************************/
 
 // MOOSE includes
 #include "MaterialOutputAction.h"
@@ -213,7 +218,7 @@ MaterialOutputAction::createAction(const std::string & type,
   InputParameters & object_params = action->getObjectParams();
   object_params.set<MaterialPropertyName>("property") = property_name;
   object_params.set<AuxVariableName>("variable") = variable_name;
-  object_params.set<ExecFlagEnum>("execute_on") = EXEC_TIMESTEP_END;
+  object_params.set<MultiMooseEnum>("execute_on") = "timestep_end";
 
   if (material->boundaryRestricted())
     object_params.set<std::vector<BoundaryName>>("boundary") = material->boundaryNames();
