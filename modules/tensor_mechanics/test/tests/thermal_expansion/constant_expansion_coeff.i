@@ -87,7 +87,7 @@
   [./thermal_expansion_strain]
     type = ComputeThermalExpansionEigenstrain
     stress_free_temperature = 298
-    thermal_expansion_coeff = 1.3e-5
+    thermal_expansion_coeff = 1.3e-5 #1/c
     temperature = temp
     eigenstrain_name = eigenstrain
   [../]

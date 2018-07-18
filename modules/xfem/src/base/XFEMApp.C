@@ -1,11 +1,9 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*          All contents are licensed under LGPL V2.1           */
+/*             See LICENSE for full restrictions                */
+/****************************************************************/
 
 #include "XFEMApp.h"
 #include "SolidMechanicsApp.h"
@@ -33,9 +31,11 @@
 #include "CircleCutUserObject.h"
 #include "EllipseCutUserObject.h"
 #include "RectangleCutUserObject.h"
-
-// Personal_TEst
+#include "XFEMMeanStress.h"
 #include "XFEMWeibullMaterial.h"
+#include "XFEMMaxHoopStress.h"
+#include "XFEMEnergyReleaseRate.h"
+#include "HeatTestAux.h"
 
 template <>
 InputParameters
@@ -55,9 +55,6 @@ XFEMApp::XFEMApp(const InputParameters & parameters) : MooseApp(parameters)
   Moose::associateSyntax(_syntax, _action_factory);
   XFEMApp::associateSyntaxDepends(_syntax, _action_factory);
   XFEMApp::associateSyntax(_syntax, _action_factory);
-
-  Moose::registerExecFlags(_factory);
-  XFEMApp::registerExecFlags(_factory);
 }
 
 XFEMApp::~XFEMApp() {}
@@ -94,6 +91,7 @@ XFEMApp::registerObjects(Factory & factory)
   registerAux(XFEMVolFracAux);
   registerAux(XFEMCutPlaneAux);
   registerAux(XFEMMarkerAux);
+  registerAux(HeatTestAux);
 
   // Constraints
   registerConstraint(XFEMSingleVariableConstraint);
@@ -109,6 +107,9 @@ XFEMApp::registerObjects(Factory & factory)
   registerUserObject(CircleCutUserObject);
   registerUserObject(EllipseCutUserObject);
   registerUserObject(RectangleCutUserObject);
+  registerUserObject(XFEMMeanStress);
+  registerUserObject(XFEMMaxHoopStress);
+  registerUserObject(XFEMEnergyReleaseRate);
 
   // DiracKernels
   registerDiracKernel(XFEMPressure);
@@ -119,7 +120,6 @@ XFEMApp::registerObjects(Factory & factory)
   // Materials
   registerMaterial(ComputeCrackTipEnrichmentSmallStrain);
   registerMaterial(XFEMWeibullMaterial);
-	 
 
   // BC's
   registerBoundaryCondition(CrackTipEnrichmentCutOffBC);
@@ -151,15 +151,4 @@ XFEMApp::associateSyntax(Syntax & syntax, ActionFactory & action_factory)
   registerAction(XFEMAction, "add_bc");
 
   registerSyntax("XFEMAction", "XFEM");
-}
-
-// External entry point for dynamic execute flag registration
-extern "C" void
-XFEMApp__registerExecFlags(Factory & factory)
-{
-  XFEMApp::registerExecFlags(factory);
-}
-void
-XFEMApp::registerExecFlags(Factory & /*factory*/)
-{
 }

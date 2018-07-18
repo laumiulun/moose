@@ -1,11 +1,9 @@
-//* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
-//*
-//* All rights reserved, see COPYRIGHT for full restrictions
-//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
-//*
-//* Licensed under LGPL 2.1, please see LICENSE for details
-//* https://www.gnu.org/licenses/lgpl-2.1.html
+/****************************************************************/
+/* MOOSE - Multiphysics Object Oriented Simulation Environment  */
+/*                                                              */
+/*          All contents are licensed under LGPL V2.1           */
+/*             See LICENSE for full restrictions                */
+/****************************************************************/
 
 #ifndef XFEM_H
 #define XFEM_H
@@ -130,8 +128,15 @@ public:
 
   void getCrackTipOrigin(std::map<unsigned int, const Elem *> & elem_id_crack_tip,
                          std::vector<Point> & crack_front_points);
-  // void update_crack_propagation_direction(const Elem* elem, Point direction);
-  // void clear_crack_propagation_direction();
+  void getCrackTipOriginDirection(std::map<unsigned int, const Elem *> & elem_id_crack_tip,
+                                  std::vector<Point> & crack_front_points,
+                                  std::vector<Point> & crack_directions);
+
+  void updateCrackGrowthDirection(const Elem * elem, Point direction);
+  void clearCrackGrowthDirection();
+  void updateDoesCrackGrowth(const Elem * elem, bool does_crack_growth);
+  void clearDoesCrackGrowth();
+  unsigned int numberCrackTips();
   /**
    * Set and get xfem cut data and type
    */
@@ -146,11 +151,6 @@ public:
                               const Elem * elem,
                               QBase * qrule,
                               const MooseArray<Point> & q_points);
-  virtual bool getXFEMFaceWeights(MooseArray<Real> & weights,
-                                  const Elem * elem,
-                                  QBase * qrule,
-                                  const MooseArray<Point> & q_points,
-                                  unsigned int side);
   virtual const ElementPairLocator::ElementPairList * getXFEMCutElemPairs() const
   {
     return &_sibling_elems;
@@ -171,6 +171,7 @@ public:
                                      std::vector<Point> & quad_pts,
                                      std::vector<Real> & quad_wts) const;
   bool has_secondary_cut() { return _has_secondary_cut; }
+  Real flagQpoint(const Elem * elem, const Point & p) const;
 
 private:
   void getFragmentEdges(const Elem * elem,
@@ -197,7 +198,8 @@ private:
 
   std::map<const Elem *, std::vector<Point>> _elem_crack_origin_direction_map;
 
-  // std::map<const Elem*, Point> _crack_propagation_direction_map;
+  std::map<const Elem *, Point> _crack_propagation_direction_map;
+  std::map<const Elem *, bool> _does_crack_growth_map;
 
   std::map<const Elem *, RealVectorValue> _state_marked_elems;
   std::set<const Elem *> _state_marked_frags;

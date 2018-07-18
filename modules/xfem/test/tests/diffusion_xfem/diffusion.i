@@ -85,6 +85,7 @@
 []
 
 [Outputs]
+  file_base = diffusion_out
   interval = 1
   execute_on = timestep_end
   exodus = true

@@ -12,6 +12,15 @@
 [Mesh]
   type = GeneratedMesh
   dim = 3
+  nx = 10
+  ny = 10
+  nz = 10
+  xmin = 0
+  xmax = 10
+  ymin = 0
+  ymax = 10
+  zmin = 0
+  zmax = 10
   displacements = 'disp_x disp_y disp_z'
 []
 
@@ -100,4 +109,3 @@
     elemental_as_nodal = true
   [../]
 []
-
